@@ -1,3 +1,0 @@
-[submodule "azure-iot-middleware-freertos"]
-	path = azure-iot-middleware-freertos
-	url = https://github.com/Azure/azure-iot-middleware-freertos.git
