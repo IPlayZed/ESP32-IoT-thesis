@@ -22,4 +22,6 @@
 
 #define DEFAULT_SERIAL_BAUD_RATE 115200
 
+#define NULL_TERMINATOR '\0'
+
 #endif

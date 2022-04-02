@@ -12,8 +12,9 @@ static const char* SSID = CONFIG_WIFI_SSID;
 static const char* PASSWORD = CONFIG_WIFI_PASSWORD;
 
 static esp_mqtt_client_handle_t mqtt_client;
+static char inbound_data[INBOUND_DATA_SIZE_BYTES];
 
-static void WiFi_Connect()
+void WiFi_Connect()
 {
     Logger.Info("Trying to connect to " + String(SSID));
 
@@ -30,8 +31,7 @@ static void WiFi_Connect()
     Logger.Info("Connected to " + String(SSID) + " with IP of " + WiFi.localIP().toString());
 }
 
-// For more information on the workings see https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/ 
-static void setupTime() {
+void setupTime() {
     Logger.Info("Initialize time via SNTP");
     configTime(TIME_ZONE_GMT_OFFSET * TIME_S_TO_H_FACTOR, TIME_DAYLIGHT_SAVING_SECS, NTP_SERVERS_URL);
       time_t now = time(NULL);
@@ -54,12 +54,11 @@ static void setupTime() {
     }
 }
 
-static esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
+esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
 {
+    int subscribe_message_id = 0;
     switch (event -> event_id)
     {
-        int subscribe_message_id = 0;
-
         case MQTT_EVENT_ERROR:
             Logger.Info("MQTT event ID: MQTT_EVENT_ERROR");
             break;
@@ -101,10 +100,16 @@ static esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
             Logger.Info("MQTT event MQTT_EVENT_PUBLISHED");
             break;
 
+        // This case only logs incoming data
         case MQTT_EVENT_DATA:
             Logger.Info("MQTT event MQTT_EVENT_DATA");
             // TODO: Implement data handling.
-
+            for (int i = 0; i < (INBOUND_DATA_SIZE_BYTES_LAST_POS && i < (event -> topic_len)); i++)
+            {
+                inbound_data[i] = event -> topic[i];
+            }
+            inbound_data[INBOUND_DATA_SIZE_BYTES_LAST_POS] = NULL_TERMINATOR;
+            
             break;
 
         case MQTT_EVENT_BEFORE_CONNECT:
@@ -114,6 +119,8 @@ static esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
         default:
             Logger.Error("MQTT event UNKNOWN");
             break;
-            
+                
     }
+
+    return ESP_OK;
 }

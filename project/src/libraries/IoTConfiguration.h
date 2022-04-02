@@ -10,5 +10,6 @@
 
 #define DEFAULT_TOPIC "devices/+/messages/devicebound/#"
 #define DEFAULT_QOS 1
+#define DEFAULT_INBOUND_DATA_SIZE_BYTES 128
 
 #endif
