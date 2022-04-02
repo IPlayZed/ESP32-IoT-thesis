@@ -1,2 +1,4 @@
 build/*
-.vscode
+!build/.gitkeep
+.vscode/*
+!.vscode/arduino.json
