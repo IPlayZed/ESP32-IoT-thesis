@@ -1,35 +1,49 @@
-#include <WiFi.h>
+/**
+ * @file Main.ino
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-04-02
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+#include <time.h>
 
-#include "libraries/SerialLogger.h"
-#include "libraries/IoTConfiguration.h"
+#include <mqtt_client.h>
+
+#include "libraries/Common.h"
 
 static const BaseType_t PRO_CPU = PRO_CPU_NUM;
 static const BaseType_t APP_CPU = APP_CPU_NUM;
 
-static const char* SSID = CONFIG_WIFI_SSID;
-static const char* PASSWORD = CONFIG_WIFI_PASSWORD;
 
-static void WiFi_Connect()
+
+
+static esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
 {
-    Logger.Info("Trying to connect to " + String(SSID));
-
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(SSID, PASSWORD);
-
-    while (WiFi.status() != WL_CONNECTED)
+    switch (event -> event_id)
     {
-        delay(1000);
-        Serial.print(".");
-    }
-    
-    Serial.println();
-    Logger.Info("Connected to " + String(SSID) + " with IP of " + WiFi.localIP().toString());
+        int subscribe_message_id = 0;
 
+        case MQTT_EVENT_ERROR:
+            Logger.Info("MQTT event ID: MQTT_EVENT_ERROR");
+            break;
+        
+        case MQTT_EVENT_CONNECTED:
+            Logger.Info("MQTT event ID: MQTT_EVENT_CONNECTED");
+            break;
+        
+        subscribe_message_id = esp_mqtt_client_subscribe
+
+        default:
+            break;
+    }
 }
 
 void setup()
 {
-
+    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
 }
 
 void loop()
