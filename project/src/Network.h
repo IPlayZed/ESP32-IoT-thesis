@@ -7,10 +7,12 @@
 #include <mqtt_client.h>
 
 #include "libraries/SerialLogger.h"
+#include "libraries/AzIoTSasToken.h"
 #include "libraries/IoTConfiguration.h"
 
 #define AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC DEFAULT_TOPIC
 #define AZ_IOT_HUB_CLIENT_QOS DEFAULT_QOS
+#define SAS_TOKEN_DURATION_IN_MINUTES 60
 #define INBOUND_DATA_SIZE_BYTES DEFAULT_INBOUND_DATA_SIZE_BYTES
 #define INBOUND_DATA_SIZE_BYTES_LAST_POS (INBOUND_DATA_SIZE_BYTES - 1)
 

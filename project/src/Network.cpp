@@ -14,6 +14,10 @@ static const char* PASSWORD = CONFIG_WIFI_PASSWORD;
 static esp_mqtt_client_handle_t mqtt_client;
 static char inbound_data[INBOUND_DATA_SIZE_BYTES];
 
+az_iot_hub_client client;
+static uint8_t sas_signature_buffer[256];
+static char mqtt_password[200];
+
 void WiFi_Connect()
 {
     Logger.Info("Trying to connect to " + String(SSID));
@@ -124,3 +128,20 @@ esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
 
     return ESP_OK;
 }
+
+static AzIoTSasToken sasToken(
+    &client,
+    AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
+    AZ_SPAN_FROM_BUFFER(sas_signature_buffer),
+    AZ_SPAN_FROM_BUFFER(mqtt_password));
+
+int initializeMQTTClient()
+{
+    if (sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES))
+    {
+        Logger.Error("Failed generating SAS token!");
+        return 1;
+    }
+    
+    
+};
