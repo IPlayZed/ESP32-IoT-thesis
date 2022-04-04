@@ -14,9 +14,14 @@ static const char* PASSWORD = CONFIG_WIFI_PASSWORD;
 static esp_mqtt_client_handle_t mqtt_client;
 static char inbound_data[INBOUND_DATA_SIZE_BYTES];
 
-az_iot_hub_client client;
+static az_iot_hub_client client;
 static uint8_t sas_signature_buffer[256];
+static char mqtt_client_id[128];
+static char mqtt_username[128];
 static char mqtt_password[200];
+
+static const char* host = CONFIG_AZURE_FQDN;
+static const char* device_id = CONFIG_AZURE_DEVICE_ID;
 
 void WiFi_Connect()
 {
@@ -35,7 +40,8 @@ void WiFi_Connect()
     Logger.Info("Connected to " + String(SSID) + " with IP of " + WiFi.localIP().toString());
 }
 
-void setupTime() {
+void setupTime() 
+{
     Logger.Info("Initialize time via SNTP");
     configTime(TIME_ZONE_GMT_OFFSET * TIME_S_TO_H_FACTOR, TIME_DAYLIGHT_SAVING_SECS, NTP_SERVERS_URL);
       time_t now = time(NULL);
@@ -129,19 +135,52 @@ esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
     return ESP_OK;
 }
 
-static AzIoTSasToken sasToken(
-    &client,
-    AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
-    AZ_SPAN_FROM_BUFFER(sas_signature_buffer),
-    AZ_SPAN_FROM_BUFFER(mqtt_password));
-
+// TODO: Implement this.
 int initializeMQTTClient()
 {
-    if (sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES))
-    {
-        Logger.Error("Failed generating SAS token!");
-        return 1;
-    }
-    
-    
+    return 0;
 };
+
+void initializeIoTHubClient()
+{
+
+    az_iot_hub_client_options IoTHubClientOptions = az_iot_hub_client_options_default();
+    IoTHubClientOptions.user_agent = AZ_SPAN_FROM_STR(AZURE_SDK_CLIENT_USER_AGENT);
+
+    az_result az_IoT_hub_result = az_iot_hub_client_init(
+        &client,
+        az_span_create((uint8_t*) host, strlen(host)),
+        az_span_create((uint8_t*) device_id, strlen(device_id)),
+        &IoTHubClientOptions
+        ); 
+    if (az_result_failed(az_IoT_hub_result))
+    {
+        Logger.Error("Failed to initialize Azure IoT Hub Client.");
+        return;
+    }
+
+    size_t client_id_length = 0;
+    az_IoT_hub_result = az_iot_hub_client_get_client_id(
+        &client,
+        mqtt_client_id,
+        sizeof(mqtt_client_id - 1),
+        &client_id_length
+    );
+    if (az_result_failed(az_IoT_hub_result))
+    {
+        Logger.Error("Failed getting client MQTT ID.");
+        return;
+    }
+
+    az_IoT_hub_result = az_iot_hub_client_get_user_name(
+        &client,
+        mqtt_username,
+        sizeofarray(mqtt_username),
+        NULL
+    );
+    if (az_result_failed(az_IoT_hub_result))
+    {
+        Logger.Error("Failed getting MQTT username.");
+        return;
+    }
+}

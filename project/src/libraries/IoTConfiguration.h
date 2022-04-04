@@ -8,7 +8,6 @@
 #define CONFIG_AZURE_DEVICE_ID "<your_device_ID_goes_here>"
 #define CONFIG_AZURE_DEVICE_KEY "<your_device_key_goes_here>"
 
-#define DEFAULT_TOPIC "devices/+/messages/devicebound/#"
 #define DEFAULT_QOS 1
 #define DEFAULT_INBOUND_DATA_SIZE_BYTES 128
 

@@ -24,4 +24,6 @@
 
 #define NULL_TERMINATOR '\0'
 
+#define sizeofarray(a) (sizeof(a) / sizeof(a[0]))
+
 #endif
