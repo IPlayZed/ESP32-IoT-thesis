@@ -9,7 +9,9 @@
 // Azure IoT SDK for C includes
 #include <az_core.h>
 #include <az_iot.h>
-#include <azure_ca.h>
+
+// Todo: find out why does leaving this in causes a linking issue!!!
+//#include <azure_ca.h>
 
 #include "SerialLogger.h"
 #include "AzIoTSasToken.h"
