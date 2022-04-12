@@ -1,11 +1,3 @@
-/**
- * @file Network.C
- * @author your name (you@domain.com)
- * @brief 
- * @version 0.1
- * @date 2022-04-02 
- */
-
 #include "Network.h"
 
 static const char* SSID = CONFIG_WIFI_SSID;
@@ -70,11 +62,11 @@ esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
     switch (event -> event_id)
     {
         case MQTT_EVENT_ERROR:
-            Logger.Info("MQTT event ID: MQTT_EVENT_ERROR");
+            Logger.Info("MQTT event: MQTT_EVENT_ERROR");
             break;
         
         case MQTT_EVENT_CONNECTED:
-            Logger.Info("MQTT event ID: MQTT_EVENT_CONNECTED");
+            Logger.Info("MQTT event: MQTT_EVENT_CONNECTED");
                 
             subscribe_message_id = esp_mqtt_client_subscribe(mqtt_client,
             AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC, DEFAULT_QOS);
@@ -95,39 +87,40 @@ esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
             break;
         
         case MQTT_EVENT_DISCONNECTED:
-            Logger.Info("MQTT event ID: MQTT_EVENT_DISCONNECTED");
+            Logger.Info("MQTT event: MQTT_EVENT_DISCONNECTED");
             break;
 
         case MQTT_EVENT_SUBSCRIBED:
-            Logger.Info("MQTT event MQTT_EVENT_SUBSCRIBED");
+            Logger.Info("MQTT event: MQTT_EVENT_SUBSCRIBED");
             break;
 
         case MQTT_EVENT_UNSUBSCRIBED:
-            Logger.Info("MQTT event MQTT_EVENT_UNSUBSCRIBED");
+            Logger.Info("MQTT event: MQTT_EVENT_UNSUBSCRIBED");
             break;
 
         case MQTT_EVENT_PUBLISHED:
-            Logger.Info("MQTT event MQTT_EVENT_PUBLISHED");
+            Logger.Info("MQTT event: MQTT_EVENT_PUBLISHED");
             break;
 
-        // This case only logs incoming data
         case MQTT_EVENT_DATA:
-            Logger.Info("MQTT event MQTT_EVENT_DATA");
-            // TODO: Implement data handling.
+            Logger.Info("MQTT event: MQTT_EVENT_DATA");
             for (int i = 0; i < (INBOUND_DATA_SIZE_BYTES_LAST_POS && i < (event -> topic_len)); i++)
             {
                 inbound_data[i] = event -> topic[i];
             }
             inbound_data[INBOUND_DATA_SIZE_BYTES_LAST_POS] = NULL_TERMINATOR;
+
+            // TODO: The data handling should be extracted to a function when it is more complicated.
+            Logger.Info("Got topic named: " + String(inbound_data));
             
             break;
 
         case MQTT_EVENT_BEFORE_CONNECT:
-            Logger.Info("MQTT event MQTT_EVENT_BEFORE_CONNECT");
+            Logger.Info("MQTT event: MQTT_EVENT_BEFORE_CONNECT");
             break;
 
         default:
-            Logger.Error("MQTT event UNKNOWN");
+            Logger.Error("MQTT event: UNKNOWN");
             break;
                 
     }
@@ -147,6 +140,7 @@ void initializeIoTHubClient()
     az_iot_hub_client_options IoTHubClientOptions = az_iot_hub_client_options_default();
     IoTHubClientOptions.user_agent = AZ_SPAN_FROM_STR(AZURE_SDK_CLIENT_USER_AGENT);
 
+    // Initialize the IoT Hub client.
     az_result az_IoT_hub_result = az_iot_hub_client_init(
         &client,
         az_span_create((uint8_t*) host, strlen(host)),
@@ -159,6 +153,7 @@ void initializeIoTHubClient()
         return;
     }
 
+    // Get the client ID length.
     size_t client_id_length = 0;
     az_IoT_hub_result = az_iot_hub_client_get_client_id(
         &client,
@@ -172,6 +167,7 @@ void initializeIoTHubClient()
         return;
     }
 
+    // Get the client username.
     az_IoT_hub_result = az_iot_hub_client_get_user_name(
         &client,
         mqtt_username,
@@ -183,4 +179,15 @@ void initializeIoTHubClient()
         Logger.Error("Failed getting MQTT username.");
         return;
     }
+
+    Logger.Info("Client ID: " + String(mqtt_client_id));
+    Logger.Info("Username: " + String(mqtt_username));
+}
+
+void tryConnection()
+{
+    WiFi_Connect();
+    setupTime();
+    initializeIoTHubClient();
+    (void)initializeMQTTClient();
 }

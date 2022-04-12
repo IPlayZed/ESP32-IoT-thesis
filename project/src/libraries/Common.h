@@ -12,6 +12,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <time.h>
+
 #define uS_TO_S_FACTOR 1000000
 #define TIME_TO_SLEEP_IN_S 5
 #define TIME_ZONE_GMT_OFFSET 2
@@ -26,4 +28,5 @@
 
 #define sizeofarray(a) (sizeof(a) / sizeof(a[0]))
 
+uint32_t getSecsSinceEpoch();
 #endif

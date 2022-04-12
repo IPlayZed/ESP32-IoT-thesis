@@ -11,11 +11,11 @@
 #include <az_iot.h>
 #include <azure_ca.h>
 
-#include "libraries/SerialLogger.h"
-#include "libraries/AzIoTSasToken.h"
-#include "libraries/IoTConfiguration.h"
+#include "SerialLogger.h"
+#include "AzIoTSasToken.h"
+#include "IoTConfiguration.h"
 
-#include "libraries/Common.h"
+#include "Common.h"
 
 #define AZ_IOT_HUB_CLIENT_QOS DEFAULT_QOS
 #define SAS_TOKEN_DURATION_IN_MINUTES 60
@@ -35,5 +35,7 @@ esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event);
 int initializeMQTTClient();
 
 void initializeIoTHubClient();
+
+void tryConnection();
 
 #endif
