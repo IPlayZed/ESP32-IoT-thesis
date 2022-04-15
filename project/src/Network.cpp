@@ -23,7 +23,7 @@ static const char *device_id = CONFIG_AZURE_DEVICE_ID;
 static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
 static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
 
-AzIoTSasToken sasToken(
+static AzIoTSasToken sasToken(
     &client,
     AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
     AZ_SPAN_FROM_BUFFER(sas_signature_buffer),
@@ -71,6 +71,14 @@ namespace Setup
             Logger.Info("Got local time: ");
             Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
         }
+    }
+
+    void tryConnection()
+    {
+        Setup::WiFi_Connect();
+        Setup::setupTime();
+        IoTHub::initializeIoTHubClient();
+        (void)MQTT::initializeMQTTClient();
     }
 }
 
@@ -290,12 +298,14 @@ namespace MQTT
             return 0;
         }
     };
-}
 
-void tryConnection()
-{
-    Setup::WiFi_Connect();
-    Setup::setupTime();
-    IoTHub::initializeIoTHubClient();
-    (void)MQTT::initializeMQTTClient();
+    bool checkIfSasTokenInstanceIsExpired()
+    {
+        return sasToken.IsExpired();
+    }
+
+    void destroyMQTTClientInstance()
+    {
+        (void)esp_mqtt_client_destroy(mqtt_client);
+    }
 }
