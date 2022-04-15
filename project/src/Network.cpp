@@ -74,7 +74,7 @@ namespace Setup
     }
 }
 
-namespace IoTHUB
+namespace IoTHub
 {
     void initializeIoTHubClient()
     {
@@ -123,6 +123,8 @@ namespace IoTHUB
         Logger.Info("Username: " + String(mqtt_username));
     }
 
+    // NOTE: This might not be good, because I do not know the internal working of az_span_copy (using a pointer might
+    // change the behaviour of it, resulting in a badly manipulated payload).
     void getTelemetryPayload(az_span *payload)
     {
         az_span payload_holder = *payload;
@@ -151,6 +153,25 @@ namespace IoTHUB
             Logger.Error("Failed to get telemetry topic for c2d messages, with code: " + String(result));
             return;
         }
+
+        IoTHub::getTelemetryPayload(&payload);
+
+        result = esp_mqtt_client_publish(
+            mqtt_client,
+            telemetry_topic,
+            (const char *)az_span_ptr(payload),
+            az_span_size(payload),
+            CONFIG_MQTT_CLIENT_QOS,
+            CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
+
+        if (result == 0)
+        {
+            Logger.Error("Publishing of payload failed! No telemetry was sent  :( ");
+        }
+        else
+        {
+            Logger.Info("Message published successfully!  :) ");
+        }
     }
 }
 namespace MQTT
@@ -169,15 +190,16 @@ namespace MQTT
             Logger.Info("MQTT event: MQTT_EVENT_CONNECTED");
 
             subscribe_message_id = esp_mqtt_client_subscribe(mqtt_client,
-                                                             AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC, DEFAULT_QOS);
+                                                             AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC,
+                                                             CONFIG_MQTT_CLIENT_QOS);
 
             if (subscribe_message_id == -1)
             {
-                Logger.Error("Could not subscribe to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with QoS level of " + String(DEFAULT_QOS));
+                Logger.Error("Could not subscribe to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
             }
             else
             {
-                Logger.Info("Subscribed to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with message ID " + String(subscribe_message_id) + " with QoS level of " + String(DEFAULT_QOS));
+                Logger.Info("Subscribed to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with message ID " + String(subscribe_message_id) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
             }
             break;
 
@@ -274,6 +296,6 @@ void tryConnection()
 {
     Setup::WiFi_Connect();
     Setup::setupTime();
-    IoTHUB::initializeIoTHubClient();
+    IoTHub::initializeIoTHubClient();
     (void)MQTT::initializeMQTTClient();
 }
