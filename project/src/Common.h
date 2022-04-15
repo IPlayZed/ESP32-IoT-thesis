@@ -1,16 +1,22 @@
 /**
  * @file Common.h
  * @author your name (you@domain.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-04-02
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef COMMON_H
 #define COMMON_H
+
+#include <time.h>
+
+#define DEFAULT_MQTT_QOS 1
+#define DEFAULT_INBOUND_DATA_SIZE_BYTES 128
+#define DEFAULT_SERIAL_BAUD_RATE 115200
 
 #define uS_TO_S_FACTOR 1000000
 #define TIME_TO_SLEEP_IN_S 5
@@ -20,10 +26,12 @@
 #define TIME_DAYLIGHT_SAVING_SECS ((TIME_ZONE_GMT_OFFSET + TIME_DAYLIGHT_SAVING_ENABLED) * TIME_S_TO_H_FACTOR)
 #define NTP_SERVERS_URL "pool.ntp.org"
 
-#define DEFAULT_SERIAL_BAUD_RATE 115200
+#define MQTT_MESSAGE_RETAIN_POLICY_ON 1
+#define MQTT_MESSAGE_RETAIN_POLICY_OFF 0
 
 #define NULL_TERMINATOR '\0'
 
 #define sizeofarray(a) (sizeof(a) / sizeof(a[0]))
 
+uint32_t getSecsSinceEpoch();
 #endif

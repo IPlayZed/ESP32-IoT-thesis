@@ -4,6 +4,8 @@
 #ifndef AZIOTSASTOKEN_H
 #define AZIOTSASTOKEN_H
 
+#define SAS_TOKEN_GENERATION_OK 0
+
 #include <Arduino.h>
 #include <az_iot_hub_client.h>
 #include <az_span.h>
@@ -12,7 +14,7 @@ class AzIoTSasToken
 {
 public:
   AzIoTSasToken(
-      az_iot_hub_client* client,
+      az_iot_hub_client *client,
       az_span deviceKey,
       az_span signatureBuffer,
       az_span sasTokenBuffer);
@@ -21,7 +23,7 @@ public:
   az_span Get();
 
 private:
-  az_iot_hub_client* client;
+  az_iot_hub_client *client;
   az_span deviceKey;
   az_span signatureBuffer;
   az_span sasTokenBuffer;

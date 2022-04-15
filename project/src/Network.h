@@ -9,15 +9,17 @@
 // Azure IoT SDK for C includes
 #include <az_core.h>
 #include <az_iot.h>
-#include <azure_ca.h>
 
-#include "libraries/SerialLogger.h"
-#include "libraries/AzIoTSasToken.h"
-#include "libraries/IoTConfiguration.h"
+// Todo: find out why does leaving this in causes a linking issue!!!
+//#include <azure_ca.h>
 
-#include "libraries/Common.h"
+#include "SerialLogger.h"
 
-#define AZ_IOT_HUB_CLIENT_QOS DEFAULT_QOS
+#include "AzIoTSasToken.h"
+#include "IoTConfiguration.h"
+
+#include "Common.h"
+
 #define SAS_TOKEN_DURATION_IN_MINUTES 60
 #define INBOUND_DATA_SIZE_BYTES DEFAULT_INBOUND_DATA_SIZE_BYTES
 #define INBOUND_DATA_SIZE_BYTES_LAST_POS (INBOUND_DATA_SIZE_BYTES - 1)
@@ -25,7 +27,7 @@
 
 void WiFi_Connect();
 
-// For more information on the workings see https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/ 
+// For more information on the workings see https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/
 void setupTime();
 
 // The library used for event handling is ESP-MQTT.
@@ -35,5 +37,7 @@ esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event);
 int initializeMQTTClient();
 
 void initializeIoTHubClient();
+
+void tryConnection();
 
 #endif
