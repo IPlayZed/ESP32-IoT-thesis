@@ -14,6 +14,7 @@
 //#include <azure_ca.h>
 
 #include "SerialLogger.h"
+
 #include "AzIoTSasToken.h"
 #include "IoTConfiguration.h"
 
@@ -27,7 +28,7 @@
 
 void WiFi_Connect();
 
-// For more information on the workings see https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/ 
+// For more information on the workings see https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/
 void setupTime();
 
 // The library used for event handling is ESP-MQTT.
