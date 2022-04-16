@@ -25,14 +25,15 @@ static const BaseType_t APP_CPU = 1;
 
 void taskSendTelemetry(void *parameter)
 {
-    Logger.Info("Entering deep sleep for the first time...");
-    esp_deep_sleep_start();
+    // Logger.Info("Entering deep sleep for the first time...");
+    // esp_deep_sleep_start();
     while (1)
     {
-        Logger.Info("Woke up from deep sleep!");
+        Logger.Info("\nWoke up from deep sleep!");
         if (WiFi.status() != WL_CONNECTED)
         {
-            Setup::WiFi_Connect();
+            // Setup::WiFi_Connect();
+            WiFi.reconnect();
         }
         else if (MQTT::checkIfSasTokenInstanceIsExpired())
         {
@@ -42,13 +43,23 @@ void taskSendTelemetry(void *parameter)
         }
         Logger.Info("Task now trying to send telemetry....");
         IoTHub::sendTelemetry();
-        Logger.Info("Telemetry sending done, entering deep sleep...");
+        Logger.Info("Telemetry sent, disconnecting wifi...");
+        WiFi.disconnect();
+        Logger.Info("Telemetry sending done, entering deep sleep in 3 seconds...\n");
+        vTaskDelay(3000 / portTICK_PERIOD_MS); // We leave some time
+        // TODO: Decide on which would make more sense architecturally.
+        esp_deep_sleep_start();
+        // FIXME: WiFi is messed up when waking up using light sleep.
+        // esp_light_sleep_start();
     }
 }
 
 void setup()
 {
+    btStop();
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
+    Serial.begin(115200);
+
     Setup::tryConnection();
 
     xTaskCreatePinnedToCore(

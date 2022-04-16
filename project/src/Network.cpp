@@ -10,7 +10,7 @@ static esp_mqtt_client_handle_t mqtt_client;
 static char inbound_data[INBOUND_DATA_SIZE_BYTES];
 static uint8_t telemetry_payload[100];
 static char telemetry_topic[128];
-static uint32_t telemetry_send_count = 0;
+uint32_t telemetry_send_count = 0;
 
 static az_iot_hub_client client;
 static uint8_t sas_signature_buffer[256];
@@ -51,7 +51,7 @@ namespace Setup
 
     void setupTime()
     {
-        Logger.Info("Initialize time via SNTP");
+        Logger.Info("Initializing time via SNTP...");
         configTime(TIME_ZONE_GMT_OFFSET * TIME_S_TO_H_FACTOR, TIME_DAYLIGHT_SAVING_SECS, NTP_SERVERS_URL);
         time_t now = time(NULL);
         while (now < 1510592825)
@@ -87,6 +87,7 @@ namespace IoTHub
     void initializeIoTHubClient()
     {
 
+        Logger.Info("Initializing IoT Hub client...");
         az_iot_hub_client_options IoTHubClientOptions = az_iot_hub_client_options_default();
         IoTHubClientOptions.user_agent = AZ_SPAN_FROM_STR(AZURE_SDK_CLIENT_USER_AGENT);
 
@@ -101,18 +102,27 @@ namespace IoTHub
             Logger.Error("Failed to initialize Azure IoT Hub Client.");
             return;
         }
+        else
+        {
+            Logger.Info("Successfully initialized IoT Hub client!");
+        }
 
         // Get the client ID length.
-        size_t client_id_length = 0;
+
+        size_t client_id_length;
         az_IoT_hub_result = az_iot_hub_client_get_client_id(
             &client,
             mqtt_client_id,
-            sizeof(mqtt_client_id - 1),
+            sizeof(mqtt_client_id) - 1,
             &client_id_length);
         if (az_result_failed(az_IoT_hub_result))
         {
-            Logger.Error("Failed getting client MQTT ID.");
+            Logger.Error("Failed getting client MQTT ID!");
             return;
+        }
+        else
+        {
+            Logger.Info("Got MQTT client ID: " + String(az_IoT_hub_result));
         }
 
         // Get the client username.
@@ -123,8 +133,12 @@ namespace IoTHub
             NULL);
         if (az_result_failed(az_IoT_hub_result))
         {
-            Logger.Error("Failed getting MQTT username.");
+            Logger.Error("Failed getting MQTT username!");
             return;
+        }
+        else
+        {
+            Logger.Info("Got MQTT client username.");
         }
 
         Logger.Info("Client ID: " + String(mqtt_client_id));
@@ -135,10 +149,11 @@ namespace IoTHub
     // change the behaviour of it, resulting in a badly manipulated payload).
     void getTelemetryPayload(az_span *payload)
     {
+        telemetry_send_count++;
         az_span payload_holder = *payload;
 
         *payload = az_span_copy(*payload, AZ_SPAN_FROM_STR("{ \"msgCount\": "));
-        (void)az_span_u32toa(*payload, telemetry_send_count++, payload);
+        (void)az_span_u32toa(*payload, telemetry_send_count, payload);
         *payload = az_span_copy(*payload, AZ_SPAN_FROM_STR(" }"));
         *payload = az_span_copy_u8(*payload, NULL_TERMINATOR);
 
