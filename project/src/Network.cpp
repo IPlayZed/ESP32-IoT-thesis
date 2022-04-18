@@ -78,7 +78,6 @@ namespace Setup
         Setup::WiFi_Connect();
         Setup::setupTime();
         IoTHub::initializeIoTHubClient();
-        (void)MQTT::initializeMQTTClient();
     }
 }
 

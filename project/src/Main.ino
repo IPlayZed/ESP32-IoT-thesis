@@ -32,33 +32,37 @@ void taskSendTelemetry(void *parameter)
         Logger.Info("\nWoke up from deep sleep!");
         if (WiFi.status() != WL_CONNECTED)
         {
-            // Setup::WiFi_Connect();
-            WiFi.reconnect();
+            Setup::WiFi_Connect();
+            (void)MQTT::initializeMQTTClient();
+            // WiFi.begin();
         }
         else if (MQTT::checkIfSasTokenInstanceIsExpired())
         {
             Logger.Info("SAS token expired; reconnecting with a new one.");
             MQTT::destroyMQTTClientInstance();
-            MQTT::initializeMQTTClient();
+            (void)MQTT::initializeMQTTClient();
         }
         Logger.Info("Task now trying to send telemetry....");
         IoTHub::sendTelemetry();
         Logger.Info("Telemetry sent, disconnecting wifi...");
-        WiFi.disconnect();
+        WiFi.disconnect(true, true);
+        MQTT::destroyMQTTClientInstance();
         Logger.Info("Telemetry sending done, entering deep sleep in 3 seconds...\n");
         vTaskDelay(3000 / portTICK_PERIOD_MS); // We leave some time
         // TODO: Decide on which would make more sense architecturally.
-        esp_deep_sleep_start();
+        // esp_deep_sleep_start();
         // FIXME: WiFi is messed up when waking up using light sleep.
-        // esp_light_sleep_start();
+        esp_light_sleep_start();
     }
 }
 
 void setup()
 {
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
     btStop();
     esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
     Serial.begin(115200);
+    Logger.Info("XDXDXDXDXDXDXDXDXDXD");
 
     Setup::tryConnection();
 
