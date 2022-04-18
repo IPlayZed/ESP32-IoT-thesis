@@ -1,6 +1,5 @@
 #include "Network.h"
-// FIXME: Find out why is it that if I include this in the header file instead of her
-// compilation fails!
+// FIXME: Find out why is it that if I include this in the header file instead of here, the linking fails!
 #include <azure_ca.h>
 
 static const char *SSID = CONFIG_WIFI_SSID;
@@ -34,7 +33,10 @@ namespace Setup
 
     void WiFi_Connect()
     {
+
+#ifdef DEBUG_MODE
         Logger.Info("Trying to connect to " + String(SSID));
+#endif
 
         WiFi.mode(WIFI_STA);
         WiFi.begin(SSID, PASSWORD);
@@ -42,24 +44,39 @@ namespace Setup
         while (WiFi.status() != WL_CONNECTED)
         {
             delay(1000);
+
+#ifdef DEBUG_MODE
             Serial.print(".");
+#endif
         }
 
+#ifdef DEBUG_MODE
         Serial.println();
         Logger.Info("Connected to " + String(SSID) + " with IP of " + WiFi.localIP().toString());
+#endif
     }
 
     void setupTime()
     {
+
+#ifdef DEBUG_MODE
         Logger.Info("Initializing time via SNTP...");
+#endif
+
         configTime(TIME_ZONE_GMT_OFFSET * TIME_S_TO_H_FACTOR, TIME_DAYLIGHT_SAVING_SECS, NTP_SERVERS_URL);
         time_t now = time(NULL);
         while (now < 1510592825)
         {
             delay(500);
+
+#ifdef DEBUG_MODE
             Serial.print(".");
+#endif
+
             now = time(nullptr);
         }
+
+#ifdef DEBUG_MODE
         Serial.println("");
         struct tm timeinfo;
         if (!getLocalTime(&timeinfo))
@@ -71,6 +88,7 @@ namespace Setup
             Logger.Info("Got local time: ");
             Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
         }
+#endif
     }
 
     void tryConnection()
@@ -86,7 +104,10 @@ namespace IoTHub
     void initializeIoTHubClient()
     {
 
+#ifdef DEBUG_MODE
         Logger.Info("Initializing IoT Hub client...");
+#endif
+
         az_iot_hub_client_options IoTHubClientOptions = az_iot_hub_client_options_default();
         IoTHubClientOptions.user_agent = AZ_SPAN_FROM_STR(AZURE_SDK_CLIENT_USER_AGENT);
 
@@ -98,13 +119,20 @@ namespace IoTHub
             &IoTHubClientOptions);
         if (az_result_failed(az_IoT_hub_result))
         {
+
+#ifdef DEBUG_MODE
             Logger.Error("Failed to initialize Azure IoT Hub Client.");
+#endif
+
             return;
         }
+
+#ifdef DEBUG_MODE
         else
         {
             Logger.Info("Successfully initialized IoT Hub client!");
         }
+#endif
 
         // Get the client ID length.
 
@@ -116,13 +144,20 @@ namespace IoTHub
             &client_id_length);
         if (az_result_failed(az_IoT_hub_result))
         {
+
+#ifdef DEBUG_MODE
             Logger.Error("Failed getting client MQTT ID!");
+#endif
+
             return;
         }
+
+#ifdef DEBUG_MODE
         else
         {
             Logger.Info("Got MQTT client ID: " + String(az_IoT_hub_result));
         }
+#endif
 
         // Get the client username.
         az_IoT_hub_result = az_iot_hub_client_get_user_name(
@@ -132,9 +167,15 @@ namespace IoTHub
             NULL);
         if (az_result_failed(az_IoT_hub_result))
         {
+
+#ifdef DEBUG_MODE
             Logger.Error("Failed getting MQTT username!");
+#endif
+
             return;
         }
+
+#ifdef DEBUG_MODE
         else
         {
             Logger.Info("Got MQTT client username.");
@@ -142,10 +183,9 @@ namespace IoTHub
 
         Logger.Info("Client ID: " + String(mqtt_client_id));
         Logger.Info("Username: " + String(mqtt_username));
+#endif
     }
 
-    // NOTE: This might not be good, because I do not know the internal working of az_span_copy (using a pointer might
-    // change the behaviour of it, resulting in a badly manipulated payload).
     void getTelemetryPayload(az_span *payload)
     {
         telemetry_send_count++;
@@ -162,7 +202,10 @@ namespace IoTHub
     void sendTelemetry()
     {
         az_span payload = AZ_SPAN_FROM_BUFFER(telemetry_payload);
+
+#ifdef DEBUG_MODE
         Logger.Info("Trying to send telemetry...");
+#endif
 
         az_result result = az_iot_hub_client_telemetry_get_publish_topic(
             &client,
@@ -172,7 +215,10 @@ namespace IoTHub
             NULL);
         if (az_result_failed(result))
         {
+
+#ifdef DEBUG_MODE
             Logger.Error("Failed to get telemetry topic for c2d messages, with code: " + String(result));
+#endif
             return;
         }
 
@@ -186,14 +232,16 @@ namespace IoTHub
             CONFIG_MQTT_CLIENT_QOS,
             CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
 
+#ifdef DEBUG_MODE
         if (result == 0)
         {
-            Logger.Error("Publishing of payload failed! No telemetry was sent  :( ");
+            Logger.Error("Publishing of payload failed! No telemetry was NOT sent  :( ");
         }
         else
         {
             Logger.Info("Message published successfully!  :) ");
         }
+#endif
     }
 }
 namespace MQTT
@@ -205,11 +253,17 @@ namespace MQTT
         switch (event->event_id)
         {
         case MQTT_EVENT_ERROR:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_ERROR");
+#endif
             break;
 
         case MQTT_EVENT_CONNECTED:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_CONNECTED");
+#endif
 
             subscribe_message_id = esp_mqtt_client_subscribe(mqtt_client,
                                                              AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC,
@@ -217,49 +271,85 @@ namespace MQTT
 
             if (subscribe_message_id == -1)
             {
+
+#ifdef DEBUG_MODE
                 Logger.Error("Could not subscribe to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
+#endif
             }
             else
             {
+
+#ifdef DEBUG_MODE
                 Logger.Info("Subscribed to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with message ID " + String(subscribe_message_id) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
+#endif
             }
             break;
 
         case MQTT_EVENT_DISCONNECTED:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_DISCONNECTED");
+#endif
+
             break;
 
         case MQTT_EVENT_SUBSCRIBED:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_SUBSCRIBED");
+#endif
+
             break;
 
         case MQTT_EVENT_UNSUBSCRIBED:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_UNSUBSCRIBED");
+#endif
+
             break;
 
         case MQTT_EVENT_PUBLISHED:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_PUBLISHED");
+#endif
+
             break;
 
         case MQTT_EVENT_DATA:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_DATA");
+#endif
+
+            // TODO: The data handling should be extracted to a function when it is more complicated.
             for (int i = 0; i < (INBOUND_DATA_SIZE_BYTES_LAST_POS && i < (event->topic_len)); i++)
             {
                 inbound_data[i] = event->topic[i];
             }
             inbound_data[INBOUND_DATA_SIZE_BYTES_LAST_POS] = NULL_TERMINATOR;
 
-            // TODO: The data handling should be extracted to a function when it is more complicated.
+#ifdef DEBUG_MODE
             Logger.Info("Got topic named: " + String(inbound_data));
+#endif
 
             break;
 
         case MQTT_EVENT_BEFORE_CONNECT:
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT event: MQTT_EVENT_BEFORE_CONNECT");
+#endif
+
             break;
 
         default:
+
+#ifdef DEBUG_MODE
             Logger.Error("MQTT event: UNKNOWN");
+#endif
+
             break;
         }
 
@@ -272,7 +362,11 @@ namespace MQTT
         int token_generation_result = sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES);
         if (token_generation_result != SAS_TOKEN_GENERATION_OK)
         {
+
+#ifdef DEBUG_MODE
             Logger.Error("SAS token generation failed with code: " + String(token_generation_result));
+#endif
+
             return 1;
         }
 
@@ -295,7 +389,11 @@ namespace MQTT
 
         if (mqtt_client == NULL)
         {
+
+#ifdef DEBUG_MODE
             Logger.Error("Failed creating MQTT client.");
+#endif
+
             return 2;
         }
 
@@ -303,12 +401,20 @@ namespace MQTT
 
         if (start_result != ESP_OK)
         {
+
+#ifdef DEBUG_MODE
             Logger.Error("Could not start MQTT client with code: " + String(start_result));
+#endif
+
             return 3;
         }
         else
         {
+
+#ifdef DEBUG_MODE
             Logger.Info("MQTT client started...");
+#endif
+
             return 0;
         }
     };
