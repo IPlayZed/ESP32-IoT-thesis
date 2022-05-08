@@ -10,9 +10,6 @@
 #include <az_core.h>
 #include <az_iot.h>
 
-// Todo: find out why does leaving this in causes a linking issue!!!
-//#include <azure_ca.h>
-
 #include "SerialLogger.h"
 
 #include "AzIoTSasToken.h"
