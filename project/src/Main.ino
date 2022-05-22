@@ -63,7 +63,6 @@ void taskSendTelemetry(void *parameter)
 
 void taskMeasureHumidity(void *parameter)
 {
-        // vTaskDelay(2000 / portTICK_PERIOD_MS);
         while (1)
         {
 
