@@ -54,9 +54,9 @@ void taskSendTelemetry(void *parameter)
                 WiFi.disconnect(true, true);
 
 #ifdef DEBUG_MODE
-                Logger.Info("Telemetry sending done, entering deep sleep in 3 seconds...\n");
+                Logger.Info("Telemetry sending done, entering deep sleep in 10 seconds...\n");
 #endif
-                vTaskDelay(3000 / portTICK_PERIOD_MS); // We leave some time before entering sleep.
+                vTaskDelay(10000 / portTICK_PERIOD_MS); // We leave some time before entering sleep.
                 esp_light_sleep_start();
         }
 }
@@ -88,16 +88,15 @@ void setup()
         // Initial connection.
         Setup::tryConnection();
 
-        /*
-                // Create all the tasks.
-                xTaskCreatePinnedToCore(
-                    taskSendTelemetry,
-                    "Dummy Telemetry Task",
-                    20000,
-                    NULL,
-                    1,
-                    NULL,
-                    PRO_CPU);*/
+        // Create all the tasks.
+        xTaskCreatePinnedToCore(
+            taskSendTelemetry,
+            "Dummy Telemetry Task",
+            20000,
+            NULL,
+            1,
+            NULL,
+            PRO_CPU);
 
         RHTempSensor::initializeSensor();
         xTaskCreatePinnedToCore(
