@@ -56,8 +56,7 @@ void taskSendTelemetry(void *parameter)
 #ifdef DEBUG_MODE
                 Logger.Info("Telemetry sending done, entering deep sleep in 3 seconds...\n");
 #endif
-                vTaskDelay(3000 / portTICK_PERIOD_MS); // We leave some time before entering deep sleep.
-                // TODO: Decide on which would make more sense architecturally.
+                vTaskDelay(3000 / portTICK_PERIOD_MS); // We leave some time before entering sleep.
                 esp_light_sleep_start();
         }
 }
@@ -87,8 +86,7 @@ void setup()
         Serial.begin(230400);
 
         // Initial connection.
-        // Setup::tryConnection();
-        RHTempSensor::initializeSensor();
+        Setup::tryConnection();
 
         /*
                 // Create all the tasks.
@@ -101,6 +99,7 @@ void setup()
                     NULL,
                     PRO_CPU);*/
 
+        RHTempSensor::initializeSensor();
         xTaskCreatePinnedToCore(
             taskMeasureHumidity,
             "Testing DHT11 Task",
