@@ -27,39 +27,66 @@ namespace RHTempSensor
         dht_sensor.begin();
     }
 
-    void readHumidity()
+    void readHumidity(float *humidity)
     {
         float humidity_result = dht_sensor.readHumidity();
-        if (handleResult(&humidity_result, &humidity))
+        if (handleResult(&humidity_result, humidity))
         {
-            Logger.Info("Measured humidity: " + String(RHTempSensor::humidity) + "%");
+#ifdef DEBUG_MODE
+            Logger.Info("Measured humidity: " + String(RHTempSensor::humidity_result) + "%");
+#endif
         }
         else
         {
+#ifdef DEBUG_MODE
             Logger.Error("Failed to read humidity from sensor.");
+#endif
         }
     }
 
-    void readTemperature()
+    void readTemperature(float *temperature)
     {
         float temperature_result = dht_sensor.readTemperature();
-        if (handleResult(&temperature_result, &temperature))
+        if (handleResult(&temperature_result, temperature))
         {
-            Logger.Info("Measured temperature: " + String(RHTempSensor::temperature) + "°C");
+#ifdef DEBUG_MODE
+            Logger.Info("Measured temperature: " + String(RHTempSensor::temperature_result) + "°C");
+#endif
         }
         else
         {
+#ifdef DEBUG_MODE
             Logger.Error("Failed to read humidity from sensor.");
+#endif
+        }
+    }
+
+    void makeMeasurements()
+    {
+        for (uint8_t i = 0; i < 10; i++)
+        {
+            readHumidity(arr_humidity + i);
+            readTemperature(arr_temperature + i);
         }
     }
 
     float getHumidity()
     {
-        return humidity;
+        float avarage = 0;
+        for (uint8_t i = 0; i < 10; i++)
+        {
+            avarage += arr_humidity[i];
+        }
+        return avarage / 10;
     }
 
     float getTemperature()
     {
-        return temperature;
+        float avarage = 0;
+        for (uint8_t i = 0; i < 10; i++)
+        {
+            avarage += arr_humidity[i];
+        }
+        return avarage / 10;
     }
 }

@@ -9,10 +9,11 @@ namespace RHTempSensor
     static const uint8_t PIN = CONFIG_PIN;
     static float humidity;
     static float temperature;
+    static float arr_humidity[10];
+    static float arr_temperature[10];
 
     void initializeSensor();
-    void readHumidity();
-    void readTemperature();
+    void makeMeasurements();
 
     float getHumidity();
     float getTemperature();

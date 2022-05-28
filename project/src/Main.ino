@@ -4,73 +4,61 @@
 #include "Network.h"
 #include "RelativeHumidityTempSensor.h"
 
-// This is only for testing purposes, when not using multicore programming.
-#ifdef _UNICORE_DEBUG
-#if CONFIG_FREERTOS_UNICORE
-static const BaseType_t APP_CPU = 0;
-#else
-static const BaseType_t APP_CPU = 1;
-#endif
-#else
-static const BaseType_t PRO_CPU = PRO_CPU_NUM;
-static const BaseType_t APP_CPU = APP_CPU_NUM;
+
+
+void taskSendTelemetry(void)
+{
+
+#ifdef DEBUG_MODE
+        Logger.Info("\nWoke up from deep sleep!");
 #endif
 
-void taskSendTelemetry(void *parameter)
-{
-        while (1)
+        if (WiFi.status() != WL_CONNECTED)
+        {
+                Setup::WiFi_Connect();
+                (void)MQTT::initializeMQTTClient();
+        }
+        else if (MQTT::checkIfSasTokenInstanceIsExpired())
         {
 
 #ifdef DEBUG_MODE
-                Logger.Info("\nWoke up from deep sleep!");
-#endif
-
-                if (WiFi.status() != WL_CONNECTED)
-                {
-                        Setup::WiFi_Connect();
-                        (void)MQTT::initializeMQTTClient();
-                }
-                else if (MQTT::checkIfSasTokenInstanceIsExpired())
-                {
-
-#ifdef DEBUG_MODE
-                        Logger.Info("SAS token expired; reconnecting with a new one.");
-#endif
-
-                        MQTT::destroyMQTTClientInstance();
-                        (void)MQTT::initializeMQTTClient();
-                }
-
-#ifdef DEBUG_MODE
-                Logger.Info("Task now trying to send telemetry....");
-#endif
-                IoTHub::sendTelemetry();
-
-#ifdef DEBUG_MODE
-                Logger.Info("Telemetry sent, disconnecting wifi...");
+                Logger.Info("SAS token expired; reconnecting with a new one.");
 #endif
 
                 MQTT::destroyMQTTClientInstance();
-                WiFi.disconnect(true, true);
+                (void)MQTT::initializeMQTTClient();
+        }
 
 #ifdef DEBUG_MODE
-                Logger.Info("Telemetry sending done, entering deep sleep in 10 seconds...\n");
+        Logger.Info("Task now trying to send telemetry....");
 #endif
-                vTaskDelay(10000 / portTICK_PERIOD_MS); // We leave some time before entering sleep.
-                esp_light_sleep_start();
-        }
+        IoTHub::sendTelemetry();
+
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+
+#ifdef DEBUG_MODE
+        Logger.Info("Telemetry sent, disconnecting wifi...");
+        Logger.Info("Telemetry sending done, entering deep sleep in 10 seconds...\n");
+#endif
+        MQTT::destroyMQTTClientInstance();
+        WiFi.disconnect(true, true);
+        vTaskDelay(2000 / portTICK_PERIOD_MS); // We leave some time before entering sleep.
 }
 
-void taskMeasureHumidity(void *parameter)
+void taskMeasureHumidity(void)
 {
-        while (1)
-        {
+        RHTempSensor::makeMeasurements();
+        delay(2000);
+}
 
-                RHTempSensor::readHumidity();
-                RHTempSensor::readTemperature();
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
-        }
-        vTaskDelete(NULL);
+void doMeasurements()
+{
+        taskMeasureHumidity();
+}
+
+void getResults()
+{
+        
 }
 
 void setup()
@@ -86,29 +74,13 @@ void setup()
 
         // Initial connection.
         Setup::tryConnection();
-
-        // Create all the tasks.
-        xTaskCreatePinnedToCore(
-            taskSendTelemetry,
-            "Dummy Telemetry Task",
-            20000,
-            NULL,
-            1,
-            NULL,
-            PRO_CPU);
-
         RHTempSensor::initializeSensor();
-        xTaskCreatePinnedToCore(
-            taskMeasureHumidity,
-            "Testing DHT11 Task",
-            20000,
-            NULL,
-            2,
-            NULL,
-            APP_CPU);
 }
 
 // Execution must not reach here (because we use FreeRTOS)!
 void loop()
 {
+        doMeasurements();
+        taskSendTelemetry();
+        esp_light_sleep_start();
 }
