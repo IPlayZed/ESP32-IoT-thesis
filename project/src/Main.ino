@@ -4,15 +4,8 @@
 #include "Network.h"
 #include "RelativeHumidityTempSensor.h"
 
-
-
 void taskSendTelemetry(void)
 {
-
-#ifdef DEBUG_MODE
-        Logger.Info("\nWoke up from deep sleep!");
-#endif
-
         if (WiFi.status() != WL_CONNECTED)
         {
                 Setup::WiFi_Connect();
@@ -38,7 +31,7 @@ void taskSendTelemetry(void)
 
 #ifdef DEBUG_MODE
         Logger.Info("Telemetry sent, disconnecting wifi...");
-        Logger.Info("Telemetry sending done, entering deep sleep in 10 seconds...\n");
+        Logger.Info("Telemetry sending done, entering deep sleep in 2 seconds for " + String(TIME_TO_SLEEP_IN_S) + "...\n");
 #endif
         MQTT::destroyMQTTClientInstance();
         WiFi.disconnect(true, true);
@@ -58,7 +51,6 @@ void doMeasurements()
 
 void getResults()
 {
-        
 }
 
 void setup()
@@ -83,4 +75,7 @@ void loop()
         doMeasurements();
         taskSendTelemetry();
         esp_light_sleep_start();
+#ifdef DEBUG_MODE
+        Logger.Info("\nWoke up from deep sleep!");
+#endif
 }
