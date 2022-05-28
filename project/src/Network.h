@@ -43,19 +43,11 @@ namespace IoTHub
 
 namespace MQTT
 {
-    // The library used for event handling is ESP-MQTT.
-    // For further reference see: https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/api-reference/protocols/mqtt.html
-    esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event);
-
     int initializeMQTTClient();
-
-    AzIoTSasToken *getSasToken();
 
     bool checkIfSasTokenInstanceIsExpired();
 
     void destroyMQTTClientInstance();
 }
-
-void tryConnection();
 
 #endif

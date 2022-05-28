@@ -1,8 +1,6 @@
 #include "RelativeHumidityTempSensor.h"
 #include "DHT.h"
 #include "SerialLogger.h"
-#define DHT_DEBUG
-#define DEBUG_MODE
 
 #define DHT_TYPE DHT11
 
@@ -51,6 +49,7 @@ namespace RHTempSensor
         }
         else
         {
+            badResult = false;
             Logger.Error("Sensor read value was NaN!");
         }
     }
@@ -65,34 +64,38 @@ namespace RHTempSensor
         for (uint8_t i = 0; i < 10; i++)
         {
             readFromSensor(arr_humidity + i, dht_sensor.readHumidity());
+
 #ifdef DEBUG_MODE
             handleLogging(arr_humidity, &i, true);
 #endif
+
             readFromSensor(arr_temperature + i, dht_sensor.readTemperature());
+
 #ifdef DEBUG_MODE
             handleLogging(arr_temperature, &i, false);
 #endif
+
             delay(2000);
         }
     }
 
     float getHumidity()
     {
-        float avarage = 0;
+        float average = 0;
         for (uint8_t i = 0; i < 10; i++)
         {
-            avarage += arr_humidity[i];
+            average += arr_humidity[i];
         }
-        return avarage / 10;
+        return average / 10;
     }
 
     float getTemperature()
     {
-        float avarage = 0;
+        float average = 0;
         for (uint8_t i = 0; i < 10; i++)
         {
-            avarage += arr_humidity[i];
+            average += arr_humidity[i];
         }
-        return avarage / 10;
+        return average / 10;
     }
 }

@@ -64,18 +64,16 @@ void setup()
         // TODO: This should be configurable.
         Serial.begin(230400);
 
-        // Initial connection.
         Setup::tryConnection();
         RHTempSensor::initializeSensor();
 }
 
-// Execution must not reach here (because we use FreeRTOS)!
 void loop()
 {
         doMeasurements();
         taskSendTelemetry();
         esp_light_sleep_start();
 #ifdef DEBUG_MODE
-        Logger.Info("\nWoke up from deep sleep!");
+        Logger.Info("Woke up from sleep!");
 #endif
 }

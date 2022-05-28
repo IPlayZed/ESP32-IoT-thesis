@@ -2,6 +2,7 @@
 #define RELATIVE_HUMIDITY_TEMP_SENSOR_H
 
 #include "HumidityRelativeTempSensorConfiguration.h"
+#include "Common.h"
 #include <stdint.h>
 
 namespace RHTempSensor
