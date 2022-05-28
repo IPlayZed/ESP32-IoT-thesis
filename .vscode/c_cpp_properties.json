@@ -204,6 +204,7 @@
                 "/home/minefpc/.arduino15/packages/esp32/hardware/esp32/2.0.3/variants/esp32",
                 "/home/minefpc/.arduino15/packages/esp32/hardware/esp32/2.0.3/libraries/WiFi/src",
                 "/home/minefpc/Arduino/libraries/Azure_SDK_for_C/src",
+                "/home/minefpc/Arduino/libraries/ArduinoJson/src",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include/c++/8.4.0",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include/c++/8.4.0/xtensa-esp32-elf",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include/c++/8.4.0/backward",

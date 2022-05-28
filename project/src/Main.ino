@@ -47,6 +47,7 @@ void taskMeasureHumidity(void)
 void doMeasurements()
 {
         taskMeasureHumidity();
+        getResults();
 }
 
 void getResults()

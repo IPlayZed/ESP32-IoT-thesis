@@ -1,9 +1,10 @@
 #include "Network.h"
 #include <azure_ca.h> // This must be included here, because the lib doesn't define include guards for this header file...
+#include <ArduinoJson.h>
 
 static esp_mqtt_client_handle_t mqtt_client;
 static char inbound_data[INBOUND_DATA_SIZE_BYTES];
-static uint8_t telemetry_payload[100];
+static uint8_t telemetry_payload[256];
 static char telemetry_topic[128];
 uint32_t telemetry_send_count = 0;
 
@@ -17,6 +18,9 @@ static const char *host = CONFIG_AZURE_FQDN;
 static const char *device_id = CONFIG_AZURE_DEVICE_ID;
 static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
 static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
+
+StaticJsonDocument<128> telemetry_msg;
+static char serialized_telemetry_msg[128];
 
 static AzIoTSasToken sasToken(
     &client,
@@ -217,8 +221,14 @@ namespace IoTHub
             return;
         }
 
+        
         IoTHub::getTelemetryPayload(&payload);
 
+        telemetry_msg["msgCount"] = telemetry_send_count;
+        serializeJson(telemetry_msg, serialized_telemetry_msg);
+        Logger.Info("DEBUG: Serialized JSON to: \"" + String(serialized_telemetry_msg) + "\"");
+
+        // TODO: Put the serialized message in.
         result = esp_mqtt_client_publish(
             mqtt_client,
             telemetry_topic,
@@ -352,7 +362,7 @@ namespace MQTT
     }
 
     // TODO: This should rather return esp_err_t.
-    int initializeMQTTClient()
+    esp_err_t initializeMQTTClient()
     {
         int token_generation_result = sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES);
         if (token_generation_result != SAS_TOKEN_GENERATION_OK)
