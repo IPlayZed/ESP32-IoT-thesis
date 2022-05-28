@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <time.h>
+#define DEBUG_MODE
 
 #define DEFAULT_MQTT_QOS 1
 #define DEFAULT_INBOUND_DATA_SIZE_BYTES 128

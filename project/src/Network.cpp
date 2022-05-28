@@ -1,9 +1,5 @@
 #include "Network.h"
-// FIXME: Find out why is it that if I include this in the header file instead of here, the linking fails!
-#include <azure_ca.h>
-
-static const char *SSID = CONFIG_WIFI_SSID;
-static const char *PASSWORD = CONFIG_WIFI_PASSWORD;
+#include <azure_ca.h> // This must be included here, because the lib doesn't define include guards for this header file...
 
 static esp_mqtt_client_handle_t mqtt_client;
 static char inbound_data[INBOUND_DATA_SIZE_BYTES];
@@ -35,11 +31,11 @@ namespace Setup
     {
 
 #ifdef DEBUG_MODE
-        Logger.Info("Trying to connect to " + String(SSID));
+        Logger.Info("Trying to connect to " + String(CONFIG_WIFI_SSID));
 #endif
 
         WiFi.mode(WIFI_STA);
-        WiFi.begin(SSID, PASSWORD);
+        WiFi.begin(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
 
         while (WiFi.status() != WL_CONNECTED)
         {
@@ -52,7 +48,7 @@ namespace Setup
 
 #ifdef DEBUG_MODE
         Serial.println();
-        Logger.Info("Connected to " + String(SSID) + " with IP of " + WiFi.localIP().toString());
+        Logger.Info("Connected to " + String(CONFIG_WIFI_SSID) + " with IP of " + WiFi.localIP().toString());
 #endif
     }
 
@@ -111,7 +107,6 @@ namespace IoTHub
         az_iot_hub_client_options IoTHubClientOptions = az_iot_hub_client_options_default();
         IoTHubClientOptions.user_agent = AZ_SPAN_FROM_STR(AZURE_SDK_CLIENT_USER_AGENT);
 
-        // Initialize the IoT Hub client.
         az_result az_IoT_hub_result = az_iot_hub_client_init(
             &client,
             az_span_create((uint8_t *)host, strlen(host)),
