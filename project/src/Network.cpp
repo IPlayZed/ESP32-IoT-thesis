@@ -222,20 +222,30 @@ namespace IoTHub
         }
 
         
-        IoTHub::getTelemetryPayload(&payload);
+        //IoTHub::getTelemetryPayload(&payload);
 
         telemetry_msg["msgCount"] = telemetry_send_count;
         serializeJson(telemetry_msg, serialized_telemetry_msg);
         Logger.Info("DEBUG: Serialized JSON to: \"" + String(serialized_telemetry_msg) + "\"");
 
         // TODO: Put the serialized message in.
+        /*
         result = esp_mqtt_client_publish(
             mqtt_client,
             telemetry_topic,
             (const char *)az_span_ptr(payload),
             az_span_size(payload),
             CONFIG_MQTT_CLIENT_QOS,
+            CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);*/
+
+        result = esp_mqtt_client_publish(
+            mqtt_client,
+            telemetry_topic,
+            serialized_telemetry_msg,
+            sizeofarray(serialized_telemetry_msg),
+            CONFIG_MQTT_CLIENT_QOS,
             CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
+        
 
 #ifdef DEBUG_MODE
         if (result == 0)
