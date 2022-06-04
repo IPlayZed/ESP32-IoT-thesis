@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <time.h>
+#include "SerialLogger.h"
 #define DEBUG_MODE
 
 #define DEFAULT_MQTT_QOS 1
@@ -24,4 +25,17 @@
 #define sizeofarray(a) (sizeof(a) / sizeof(a[0]))
 
 uint32_t getSecsSinceEpoch();
+
+#ifdef DEBUG_MODE
+    #define LogInfo(text) Logger.Info(text)
+    #define LogError(text) Logger.Error(text)
+    #define SerialPrint(text) Serial.print(text)
+    #define SerialPrintln() Serial.println()
+#else
+    #define LogInfo(text)
+    #define LogError(text)
+    #define SerialPrint(text)
+    #define SerialPrintln()
+#endif
+
 #endif

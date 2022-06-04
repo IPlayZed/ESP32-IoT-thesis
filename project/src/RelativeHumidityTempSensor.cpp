@@ -4,6 +4,7 @@
 
 #define DHT_TYPE DHT11
 
+// TODO: Implement moving avarage (so that failed measurements do not mess up the value).
 namespace RHTempSensor
 {
     static DHT dht_sensor(RHTempSensor::PIN, DHT_TYPE);
