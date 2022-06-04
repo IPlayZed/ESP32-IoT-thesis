@@ -57,7 +57,6 @@ namespace Setup
         {
             delay(500);
             SerialPrint('.');
-
             now = time(nullptr);
         }
 
@@ -70,7 +69,8 @@ namespace Setup
         }
         else
         {
-            LogInfo("Got local times: ");
+            LogInfo("Got local time: ");
+            // TODO: Better preprocessing conditional.
             #ifdef DEBUG_MODE
             Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
             #endif
@@ -159,14 +159,33 @@ namespace IoTHub
         }
 
         StaticJsonDocument<128> telemetry_msg;
-        telemetry_msg["msgCount"] = telemetry_send_count;
+        telemetry_msg["msgCount"] = telemetry_send_count;  
         serializeJson(telemetry_msg, serialized_telemetry_msg);
 
+        // TODO: Refactor and extract to function.
+        /* Telemetry message resizing magic. */
+        uint8_t size = 0;
+
+        while (serialized_telemetry_msg[size] != NULL_TERMINATOR)
+        {
+            size++;
+        }
+        char* optimized_telemetry_msg = (char*)malloc(sizeof(char) * size);
+
+        for (uint8_t i = 0; i <= size; i++)
+        {
+            optimized_telemetry_msg[i] = serialized_telemetry_msg[i];
+        }
+
+        LogInfo("Optimized msg: " + String(optimized_telemetry_msg) + "\n");
+
+        /* Telemetry message resizing magic. */
+        
         result = esp_mqtt_client_publish(
             mqtt_client,
             telemetry_topic,
-            serialized_telemetry_msg,
-            sizeofarray(serialized_telemetry_msg),
+            optimized_telemetry_msg,
+            size,
             CONFIG_MQTT_CLIENT_QOS,
             CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
 
