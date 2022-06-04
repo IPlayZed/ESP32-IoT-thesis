@@ -52,7 +52,7 @@ namespace Setup
         LogInfo("Initializing time via SNTP...");
         configTime(TIME_ZONE_GMT_OFFSET * TIME_S_TO_H_FACTOR, TIME_DAYLIGHT_SAVING_SECS, NTP_SERVERS_URL);
         time_t now = time(NULL);
-        while (now < 1510592825) // TODO: Define a constant or smth for this magic number.
+        while (now < MAGIC_TIMESTAMP)
         {
             delay(500);
             SerialPrint('.');
@@ -60,19 +60,20 @@ namespace Setup
             now = time(nullptr);
         }
 
-#ifdef DEBUG_MODE
-        Serial.println("");
         struct tm timeinfo;
+        SerialPrintln();
+        
         if (!getLocalTime(&timeinfo))
         {
-            Logger.Error("Failed to get local time!");
+            LogError("Failed to get local time!");
         }
         else
         {
-            Logger.Info("Got local time: ");
+            LogInfo("Got local times: ");
+            #ifdef DEBUG_MODE
             Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+            #endif
         }
-#endif
     }
 
     void tryConnection(void)
@@ -87,10 +88,7 @@ namespace IoTHub
 {
     void initializeIoTHubClient(void)
     {
-
-#ifdef DEBUG_MODE
-        Logger.Info("Initializing IoT Hub client...");
-#endif
+        LogInfo("Initializing IoT Hub client...");
 
         az_iot_hub_client_options IoTHubClientOptions = az_iot_hub_client_options_default();
         IoTHubClientOptions.user_agent = AZ_SPAN_FROM_STR(AZURE_SDK_CLIENT_USER_AGENT);
@@ -105,7 +103,6 @@ namespace IoTHub
             LogError("Failed to initialize Azure IoT Hub Client.");
             return;
         }
-
         else
         {
             LogInfo("Successfully initialized IoT Hub client!");
@@ -144,19 +141,6 @@ namespace IoTHub
         LogInfo("Client ID: " + String(mqtt_client_id) + " Username: " + String(mqtt_username));
     }
 
-    void getTelemetryPayload(az_span *payload)
-    {
-        telemetry_send_count++;
-        az_span payload_holder = *payload;
-
-        *payload = az_span_copy(*payload, AZ_SPAN_FROM_STR("{ \"msgCount\": "));
-        (void)az_span_u32toa(*payload, telemetry_send_count, payload);
-        *payload = az_span_copy(*payload, AZ_SPAN_FROM_STR(" }"));
-        *payload = az_span_copy_u8(*payload, NULL_TERMINATOR);
-
-        *payload = az_span_slice(payload_holder, 0, az_span_size(payload_holder) - az_span_size(*payload));
-    }
-
     void sendTelemetry(void)
     {
         az_span payload = AZ_SPAN_FROM_BUFFER(telemetry_payload);
@@ -179,7 +163,7 @@ namespace IoTHub
         telemetry_msg["msgCount"] = telemetry_send_count;
         serializeJson(telemetry_msg, serialized_telemetry_msg);      
         
-        Logger.Info("DEBUG: Serialized JSON to: \"" + String(serialized_telemetry_msg) + "\"");
+        Logger.Info("DEBUG: Serialized JSON to: " + String(serialized_telemetry_msg));
 
         result = esp_mqtt_client_publish(
             mqtt_client,
@@ -210,110 +194,68 @@ namespace MQTT
         switch (event->event_id)
         {
         case MQTT_EVENT_ERROR:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_ERROR");
-#endif
+            LogInfo("MQTT event: MQTT_EVENT_ERROR");
             break;
 
         case MQTT_EVENT_CONNECTED:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_CONNECTED");
-#endif
-
+            LogInfo("MQTT event: MQTT_EVENT_CONNECTED");
             subscribe_message_id = esp_mqtt_client_subscribe(mqtt_client,
                                                              AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC,
                                                              CONFIG_MQTT_CLIENT_QOS);
 
             if (subscribe_message_id == -1)
             {
-
-#ifdef DEBUG_MODE
-                Logger.Error("Could not subscribe to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
-#endif
+                LogError("Could not subscribe to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) 
+                + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
             }
             else
             {
-
-#ifdef DEBUG_MODE
-                Logger.Info("Subscribed to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with message ID " + String(subscribe_message_id) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
-#endif
+                LogInfo("Subscribed to topic " 
+                + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with message ID " 
+                + String(subscribe_message_id) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
             }
             break;
 
         case MQTT_EVENT_DISCONNECTED:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_DISCONNECTED");
-#endif
-
+            LogInfo("MQTT event: MQTT_EVENT_DISCONNECTED");
             break;
 
         case MQTT_EVENT_SUBSCRIBED:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_SUBSCRIBED");
-#endif
-
+            LogInfo("MQTT event: MQTT_EVENT_SUBSCRIBED");
             break;
 
         case MQTT_EVENT_UNSUBSCRIBED:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_UNSUBSCRIBED");
-#endif
-
+            LogInfo("MQTT event: MQTT_EVENT_UNSUBSCRIBED");
             break;
 
         case MQTT_EVENT_PUBLISHED:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_PUBLISHED");
-#endif
-
+            LogInfo("MQTT event: MQTT_EVENT_PUBLISHED");
             break;
 
         case MQTT_EVENT_DATA:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_DATA");
-#endif
-
-            // TODO: The data handling should be extracted to a function when it is more complicated.
+            LogInfo("MQTT event: MQTT_EVENT_DATA");
+            // TODO: The data handling should be extracted to a function when it is more complicated. (Maybe, but we do not really care about this data in my implementation (?))
             for (int i = 0; i < (INBOUND_DATA_SIZE_BYTES_LAST_POS && i < (event->topic_len)); i++)
             {
                 inbound_data[i] = event->topic[i];
             }
             inbound_data[INBOUND_DATA_SIZE_BYTES_LAST_POS] = NULL_TERMINATOR;
-
-#ifdef DEBUG_MODE
-            Logger.Info("Got topic named: " + String(inbound_data));
-#endif
-
+            LogInfo("Got topic/data named: " + String(inbound_data));
             break;
 
         case MQTT_EVENT_BEFORE_CONNECT:
-
-#ifdef DEBUG_MODE
-            Logger.Info("MQTT event: MQTT_EVENT_BEFORE_CONNECT");
-#endif
-
+            LogInfo("MQTT event: MQTT_EVENT_BEFORE_CONNECT");
             break;
 
         default:
-
-#ifdef DEBUG_MODE
-            Logger.Error("MQTT event: UNKNOWN");
-#endif
-
+            LogError("MQTT event: UNKNOWN");
             break;
         }
 
         return ESP_OK;
     }
 
-    // TODO: Better error types.
+    // TODO: Better error return types.
     esp_err_t initializeMQTTClient(void)
     {
         int token_generation_result = sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES);
