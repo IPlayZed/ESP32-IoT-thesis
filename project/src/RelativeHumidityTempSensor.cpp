@@ -30,7 +30,7 @@ namespace RHTempSensor
 
     void readFromSensor(float *storage, float result)
     {
-        bool is_ok = handleResult(&result, storage);
+        bool is_ok = RHTempSensor::handleResult(&result, storage);
         if (!is_ok)
             *storage = 0;
     }
@@ -41,17 +41,17 @@ namespace RHTempSensor
         {
             if (!isHumidity)
             {
-                Logger.Info("Measured temperature: " + String(*(value + *i)) + "°C");
+                LogInfo("Measured temperature: " + String(*(value + *i)) + "°C");
             }
             else
             {
-                Logger.Info("Measured humidity: " + String(*(value + *i)) + "%");
+                LogInfo("Measured humidity: " + String(*(value + *i)) + "%");
             }
         }
         else
         {
-            badResult = false;
-            Logger.Error("Sensor read value was NaN!");
+            RHTempSensor::badResult = false;
+            LogError("Sensor read value was NaN!");
         }
     }
 
@@ -64,17 +64,13 @@ namespace RHTempSensor
     {
         for (uint8_t i = 0; i < 10; i++)
         {
-            readFromSensor(arr_humidity + i, dht_sensor.readHumidity());
+            RHTempSensor::readFromSensor(arr_humidity + i, dht_sensor.readHumidity());
 
-#ifdef DEBUG_MODE
-            handleLogging(arr_humidity, &i, true);
-#endif
+            RHTempSensor::handleLogging(arr_humidity, &i, true);
 
-            readFromSensor(arr_temperature + i, dht_sensor.readTemperature());
+            RHTempSensor::readFromSensor(arr_temperature + i, dht_sensor.readTemperature());
 
-#ifdef DEBUG_MODE
-            handleLogging(arr_temperature, &i, false);
-#endif
+            RHTempSensor::handleLogging(arr_temperature, &i, false);
 
             delay(2000);
         }
@@ -85,7 +81,7 @@ namespace RHTempSensor
         float average = 0;
         for (uint8_t i = 0; i < 10; i++)
         {
-            average += arr_humidity[i];
+            average += RHTempSensor::arr_humidity[i];
         }
         return average / 10;
     }
@@ -95,7 +91,7 @@ namespace RHTempSensor
         float average = 0;
         for (uint8_t i = 0; i < 10; i++)
         {
-            average += arr_humidity[i];
+            average += RHTempSensor::arr_humidity[i];
         }
         return average / 10;
     }

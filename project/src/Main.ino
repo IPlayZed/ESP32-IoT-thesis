@@ -1,3 +1,5 @@
+// Licensed under: GNU GENERAL PUBLIC LICENSE Version 2
+
 #include "SerialLogger.h"
 
 #include "Common.h"
@@ -13,29 +15,20 @@ void taskSendTelemetry(void)
         }
         else if (MQTT::checkIfSasTokenInstanceIsExpired())
         {
-
-#ifdef DEBUG_MODE
-                Logger.Info("SAS token expired; reconnecting with a new one.");
-#endif
-
+                LogInfo("SAS token expired; reconnecting with a new one.");
                 MQTT::destroyMQTTClientInstance();
-                (void)MQTT::initializeMQTTClient();
+                MQTT::initializeMQTTClient();
         }
 
-#ifdef DEBUG_MODE
-        Logger.Info("Task now trying to send telemetry....");
-#endif
+        LogInfo("Task now trying to send telemetry....");
         IoTHub::sendTelemetry();
 
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        delay(2000); // FIXME: Is this needed at all?
 
-#ifdef DEBUG_MODE
-        Logger.Info("Telemetry sent, disconnecting wifi...");
-        Logger.Info("Telemetry sending done, entering deep sleep in 2 seconds for " + String(TIME_TO_SLEEP_IN_S) + "...\n");
-#endif
+        LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(TIME_TO_SLEEP_IN_S) + "...\n");
         MQTT::destroyMQTTClientInstance();
         WiFi.disconnect(true, true);
-        vTaskDelay(2000 / portTICK_PERIOD_MS); // We leave some time before entering sleep.
+        delay(2000);
 }
 
 void taskMeasureHumidity(void)
@@ -56,14 +49,10 @@ void getResults()
 
 void setup()
 {
-        // This is just to have time to connect via serial to monitor events.
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
-        // We disable the Bluetooth controller, because we do not want to use it and it saves energy.
+        delay(5000); // This is just to have time to connect via serial to monitor events.
         btStop();
-        // Set the initial wakeup period.
         esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
-        // TODO: This should be configurable.
-        Serial.begin(230400);
+        Serial.begin(CONFIG_SERIAL_BAUD_RATE);
 
         Setup::tryConnection();
         RHTempSensor::initializeSensor();
@@ -74,7 +63,5 @@ void loop()
         doMeasurements();
         taskSendTelemetry();
         esp_light_sleep_start();
-#ifdef DEBUG_MODE
-        Logger.Info("Woke up from sleep!");
-#endif
+        LogInfo("Woke up from sleep!");
 }

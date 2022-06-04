@@ -1,10 +1,11 @@
+// Licensed under: GNU GENERAL PUBLIC LICENSE Version 2
+
 #include "Network.h"
 #include <azure_ca.h> // This must be included here, because the lib doesn't define include guards for this header file...
 #include <ArduinoJson.h>
 
 static esp_mqtt_client_handle_t mqtt_client;
 static char inbound_data[INBOUND_DATA_SIZE_BYTES];
-static uint8_t telemetry_payload[256];
 static char telemetry_topic[128];
 uint32_t telemetry_send_count = 0;
 
@@ -143,8 +144,6 @@ namespace IoTHub
 
     void sendTelemetry(void)
     {
-        az_span payload = AZ_SPAN_FROM_BUFFER(telemetry_payload);
-
         LogInfo("Trying to send telemetry...");
 
         az_result result = az_iot_hub_client_telemetry_get_publish_topic(
@@ -161,9 +160,7 @@ namespace IoTHub
 
         StaticJsonDocument<128> telemetry_msg;
         telemetry_msg["msgCount"] = telemetry_send_count;
-        serializeJson(telemetry_msg, serialized_telemetry_msg);      
-        
-        Logger.Info("DEBUG: Serialized JSON to: " + String(serialized_telemetry_msg));
+        serializeJson(telemetry_msg, serialized_telemetry_msg);
 
         result = esp_mqtt_client_publish(
             mqtt_client,
@@ -256,17 +253,16 @@ namespace MQTT
     }
 
     // TODO: Better error return types.
-    esp_err_t initializeMQTTClient(void)
+    void initializeMQTTClient(void)
     {
         int token_generation_result = sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES);
         if (token_generation_result != SAS_TOKEN_GENERATION_OK)
         {
-            LogError("SAS token generation failed with code: " + String(token_generation_result));
-            return 1;
+            return LogError("SAS token generation failed with code: " + String(token_generation_result));
         }
 
+        // TODO: Refactor this into a function call.
         esp_mqtt_client_config_t mqtt_configuration;
-        memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
         memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
         mqtt_configuration.uri = mqtt_broker_uri;
         mqtt_configuration.port = mqtt_port;
@@ -284,8 +280,7 @@ namespace MQTT
 
         if (mqtt_client == NULL)
         {
-            LogError("Failed creating MQTT client.");
-            return 2;
+            return LogError("Failed creating MQTT client.");;
         }
 
         esp_err_t start_result = esp_mqtt_client_start(mqtt_client);
@@ -293,12 +288,12 @@ namespace MQTT
         if (start_result != ESP_OK)
         {
             LogError("Could not start MQTT client with code: " + String(start_result));
-            return 3;
+            return;
         }
         else
         {
             LogInfo("MQTT client started...");
-            return 0;
+            return;
         }
     };
 

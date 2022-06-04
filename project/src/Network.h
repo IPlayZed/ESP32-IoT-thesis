@@ -1,3 +1,5 @@
+// Licensed under: GNU GENERAL PUBLIC LICENSE Version 2
+
 #ifndef NETWORK_H
 #define NETWORK_H
 
@@ -44,7 +46,7 @@ namespace IoTHub
 
 namespace MQTT
 {
-    int initializeMQTTClient();
+    void initializeMQTTClient();
 
     bool checkIfSasTokenInstanceIsExpired();
 
