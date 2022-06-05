@@ -6,7 +6,7 @@
 
 
 static esp_mqtt_client_handle_t mqtt_client;
-static char inbound_data[INBOUND_DATA_SIZE_BYTES];
+// static char inbound_data[INBOUND_DATA_SIZE_BYTES]; // NOTE: This actually is not needed in our application but this would be an example of how to handle this data.
 static char telemetry_topic[128];
 uint32_t telemetry_send_count = 0;
 
@@ -38,6 +38,7 @@ namespace Setup
 
         while (WiFi.status() != WL_CONNECTED)
         {
+            // TODO: Make this configurable.
             delay(1000);
             SerialPrint('.');
         }
@@ -53,7 +54,8 @@ namespace Setup
         time_t now = time(NULL);
         while (now < MAGIC_TIMESTAMP)
         {
-            delay(500);
+            // TODO: Make this configurable.
+            delay(1000);
             SerialPrint('.');
             now = time(nullptr);
         }
@@ -178,10 +180,7 @@ namespace IoTHub
         else
         {
             LogInfo("Message published successfully!  :) ");
-        }
-
-        
-        
+        }  
     }
 }
 namespace MQTT
@@ -233,13 +232,15 @@ namespace MQTT
 
         case MQTT_EVENT_DATA:
             LogInfo("MQTT event: MQTT_EVENT_DATA");
-            // TODO: The data handling should be extracted to a function when it is more complicated. (Maybe, but we do not really care about this data in my implementation (?))
+            // NOTE: This actually is not needed in our application but this would be an example of how to handle this data.
+            /*
             for (int i = 0; i < (INBOUND_DATA_SIZE_BYTES_LAST_POS && i < (event->topic_len)); i++)
             {
                 inbound_data[i] = event->topic[i];
             }
             inbound_data[INBOUND_DATA_SIZE_BYTES_LAST_POS] = NULL_TERMINATOR;
             LogInfo("Got topic/data named: " + String(inbound_data));
+            */
             break;
 
         case MQTT_EVENT_BEFORE_CONNECT:
@@ -254,7 +255,6 @@ namespace MQTT
         return ESP_OK;
     }
 
-    // TODO: Better error return types.
     void initializeMQTTClient(void)
     {
         int token_generation_result = sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES);
@@ -263,7 +263,7 @@ namespace MQTT
             return LogError("SAS token generation failed with code: " + String(token_generation_result));
         }
 
-        // TODO: Refactor this into a function call.
+        // TODO: Refactor this config into a function call.
         esp_mqtt_client_config_t mqtt_configuration;
         memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
         mqtt_configuration.uri = mqtt_broker_uri;

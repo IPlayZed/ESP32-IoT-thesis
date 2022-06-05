@@ -1,5 +1,6 @@
 #include "RelativeHumidityTempSensor.h"
 #include "DHT.h"
+#include "DHTConfig.h"
 #include "SerialLogger.h"
 
 #define DHT_TYPE DHT11
@@ -8,18 +9,25 @@
 // TODO: Implement moving avarage (so that failed measurements do not mess up the value).
 namespace RHTempSensor
 {
-    static DHT dht_sensor(RHTempSensor::PIN, DHT_TYPE);
+    static DHT dht_sensor(CONFIG_PIN, DHT_TYPE);
 
     static bool badResult = false;
+    static uint8_t moving_avarage_actual_samples = CONFIG_MEASUREMENT_TIMES;
 
     // Checks if the result is a number.
     // If it is one, then it stores it in storage and returns true.
     // If it is not, then it ignores it and returns false, leaving handling to caller.
-    bool handleResult(float *checkable, float *storage)
+    bool _handleResult(float *checkable, float *storage)
     {
-        if (isnan(*checkable))
+        if (checkable == nullptr or storage == nullptr)
         {
-            badResult = true;
+            LogError("Could not handle result becaus either the checked or storage pointer was null");
+            RHTempSensor::badResult = true;
+            return false;
+        }
+        else if (isnan(*checkable))
+        {
+            RHTempSensor::badResult = true;
             return false;
         }
         else
@@ -29,24 +37,34 @@ namespace RHTempSensor
         }
     }
 
-    void readFromSensor(float *storage, float result)
+    void _readFromSensor(float *storage, float result)
     {
-        bool is_ok = RHTempSensor::handleResult(&result, storage);
+        bool is_ok = RHTempSensor::_handleResult(&result, storage);
         if (!is_ok)
+        {
+            RHTempSensor::moving_avarage_actual_samples--;
             *storage = 0;
+        }
+            
     }
 
-    static void handleLogging(float *value, uint8_t *i, bool isHumidity)
+    static void _handleLogging(float *value, uint8_t *i, bool isHumidity)
     {
+        if (value == nullptr or i == nullptr)
+        {
+            LogError("Could not handle logging as either the value or the index was null");
+            return;
+        }
+        
         if (!RHTempSensor::badResult)
         {
             if (!isHumidity)
             {
-                LogInfo("Measured temperature: " + String(*(value + *i)) + "°C");
+                return LogInfo("Measured temperature: " + String(*(value + *i)) + "°C");
             }
             else
             {
-                LogInfo("Measured humidity: " + String(*(value + *i)) + "%");
+                return LogInfo("Measured humidity: " + String(*(value + *i)) + "%");
             }
         }
         else
@@ -56,44 +74,48 @@ namespace RHTempSensor
         }
     }
 
-    void initializeSensor()
+    void initializeSensor(void)
     {
         dht_sensor.begin();
     }
 
-    void makeMeasurements()
+    void makeMeasurements(void)
     {
-        for (uint8_t i = 0; i < TIMES; i++)
+        for (uint8_t i = 0; i < CONFIG_MEASUREMENT_TIMES; i++)
         {
-            RHTempSensor::readFromSensor(arr_humidity + i, dht_sensor.readHumidity());
+            RHTempSensor::_readFromSensor(arr_humidity + i, dht_sensor.readHumidity());
 
-            RHTempSensor::handleLogging(arr_humidity, &i, true);
+            RHTempSensor::_handleLogging(arr_humidity, &i, true);
 
-            RHTempSensor::readFromSensor(arr_temperature + i, dht_sensor.readTemperature());
+            RHTempSensor::_readFromSensor(arr_temperature + i, dht_sensor.readTemperature());
 
-            RHTempSensor::handleLogging(arr_temperature, &i, false);
+            RHTempSensor::_handleLogging(arr_temperature, &i, false);
 
-            delay(2000);
+            delay(DHT_SAMPLING_PERIOD);
         }
     }
 
-    float getHumidity()
+    float getHumidity(void)
     {
         float average = 0;
-        for (uint8_t i = 0; i < TIMES; i++)
+        for (uint8_t i = 0; i < CONFIG_MEASUREMENT_TIMES; i++)
         {
             average += RHTempSensor::arr_humidity[i];
         }
-        return average / TIMES;
+        uint8_t oldval = RHTempSensor::moving_avarage_actual_samples;
+        RHTempSensor::moving_avarage_actual_samples = CONFIG_MEASUREMENT_TIMES;
+        return average / oldval;
     }
 
-    float getTemperature()
+    float getTemperature(void)
     {
         float average = 0;
-        for (uint8_t i = 0; i < TIMES; i++)
+        for (uint8_t i = 0; i < CONFIG_MEASUREMENT_TIMES; i++)
         {
             average += RHTempSensor::arr_humidity[i];
         }
-        return average / TIMES;
+        uint8_t oldval = RHTempSensor::moving_avarage_actual_samples;
+        RHTempSensor::moving_avarage_actual_samples = CONFIG_MEASUREMENT_TIMES;
+        return average / oldval;
     }
 }
