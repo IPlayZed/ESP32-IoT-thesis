@@ -4,6 +4,7 @@
 #include <azure_ca.h> // This must be included here, because the lib doesn't define include guards for this header file...
 #include <ArduinoJson.h>
 
+
 static esp_mqtt_client_handle_t mqtt_client;
 static char inbound_data[INBOUND_DATA_SIZE_BYTES];
 static char telemetry_topic[128];
@@ -19,9 +20,6 @@ static const char *host = CONFIG_AZURE_FQDN;
 static const char *device_id = CONFIG_AZURE_DEVICE_ID;
 static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
 static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
-
-
-static char serialized_telemetry_msg[128];
 
 static AzIoTSasToken sasToken(
     &client,
@@ -160,34 +158,16 @@ namespace IoTHub
 
         StaticJsonDocument<128> telemetry_msg;
         telemetry_msg["msgCount"] = telemetry_send_count;  
-        serializeJson(telemetry_msg, serialized_telemetry_msg);
-
-        // TODO: Refactor and extract to function.
-        /* Telemetry message resizing magic. */
-        uint8_t size = 0;
-
-        while (serialized_telemetry_msg[size] != NULL_TERMINATOR)
-        {
-            size++;
-        }
-        char* optimized_telemetry_msg = (char*)malloc(sizeof(char) * size);
-
-        for (uint8_t i = 0; i <= size; i++)
-        {
-            optimized_telemetry_msg[i] = serialized_telemetry_msg[i];
-        }
-
-        LogInfo("Optimized msg: " + String(optimized_telemetry_msg) + "\n");
-
-        /* Telemetry message resizing magic. */
-        
+        String serialized_telemetry_message;
+        serializeJson(telemetry_msg, serialized_telemetry_message);
+        LogInfo("Serialized msg: " + serialized_telemetry_message);
         result = esp_mqtt_client_publish(
-            mqtt_client,
-            telemetry_topic,
-            optimized_telemetry_msg,
-            size,
-            CONFIG_MQTT_CLIENT_QOS,
-            CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
+                 mqtt_client,
+                 telemetry_topic,
+                 serialized_telemetry_message.c_str(),
+                 serialized_telemetry_message.length(),
+                 CONFIG_MQTT_CLIENT_QOS,
+                 CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
 
         telemetry_send_count++;
         
@@ -199,6 +179,9 @@ namespace IoTHub
         {
             LogInfo("Message published successfully!  :) ");
         }
+
+        
+        
     }
 }
 namespace MQTT

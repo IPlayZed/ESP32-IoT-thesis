@@ -4,6 +4,7 @@
 
 #define DHT_TYPE DHT11
 
+
 // TODO: Implement moving avarage (so that failed measurements do not mess up the value).
 namespace RHTempSensor
 {
@@ -62,7 +63,7 @@ namespace RHTempSensor
 
     void makeMeasurements()
     {
-        for (uint8_t i = 0; i < 10; i++)
+        for (uint8_t i = 0; i < TIMES; i++)
         {
             RHTempSensor::readFromSensor(arr_humidity + i, dht_sensor.readHumidity());
 
@@ -79,20 +80,20 @@ namespace RHTempSensor
     float getHumidity()
     {
         float average = 0;
-        for (uint8_t i = 0; i < 10; i++)
+        for (uint8_t i = 0; i < TIMES; i++)
         {
             average += RHTempSensor::arr_humidity[i];
         }
-        return average / 10;
+        return average / TIMES;
     }
 
     float getTemperature()
     {
         float average = 0;
-        for (uint8_t i = 0; i < 10; i++)
+        for (uint8_t i = 0; i < TIMES; i++)
         {
             average += RHTempSensor::arr_humidity[i];
         }
-        return average / 10;
+        return average / TIMES;
     }
 }
