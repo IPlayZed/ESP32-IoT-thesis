@@ -23,8 +23,6 @@ void taskSendTelemetry(void)
         LogInfo("Task now trying to send telemetry....");
         IoTHub::sendTelemetry();
 
-        delay(2000); // FIXME: Is this needed at all?
-
         LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(TIME_TO_SLEEP_IN_S) + "...\n");
         MQTT::destroyMQTTClientInstance();
         WiFi.disconnect(true, true);
