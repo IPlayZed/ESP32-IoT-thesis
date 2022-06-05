@@ -205,15 +205,15 @@
                 "/home/minefpc/.arduino15/packages/esp32/hardware/esp32/2.0.3/libraries/WiFi/src",
                 "/home/minefpc/Arduino/libraries/Azure_SDK_for_C/src",
                 "/home/minefpc/Arduino/libraries/ArduinoJson/src",
+                "/home/minefpc/Arduino/libraries/DHT_sensor_library",
+                "/home/minefpc/Arduino/libraries/Adafruit_Unified_Sensor",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include/c++/8.4.0",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include/c++/8.4.0/xtensa-esp32-elf",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include/c++/8.4.0/backward",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/lib/gcc/xtensa-esp32-elf/8.4.0/include",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/lib/gcc/xtensa-esp32-elf/8.4.0/include-fixed",
                 "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/sys-include",
-                "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include",
-                "/home/minefpc/Arduino/libraries/DHT_sensor_library",
-                "/home/minefpc/Arduino/libraries/Adafruit_Unified_Sensor"
+                "/home/minefpc/.arduino15/packages/esp32/tools/xtensa-esp32-elf-gcc/gcc8_4_0-esp-2021r2-patch3/xtensa-esp32-elf/include"
             ],
             "forcedInclude": [
                 "/home/minefpc/.arduino15/packages/esp32/hardware/esp32/2.0.3/cores/esp32/Arduino.h"
