@@ -3,6 +3,7 @@
 #include "SerialLogger.h"
 
 #include "Common.h"
+#include "CommonConfig.h"
 #include "Network.h"
 #include "RelativeHumidityTempSensor.h"
 
@@ -23,7 +24,7 @@ void taskSendTelemetry(void)
         LogInfo("Task now trying to send telemetry....");
         IoTHub::sendTelemetry();
 
-        LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(TIME_TO_SLEEP_IN_S) + "...\n");
+        LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(CONFIG_TIME_TO_SLEEP_IN_S) + "...\n");
         MQTT::destroyMQTTClientInstance();
         WiFi.disconnect(true, true);
         delay(2000);
@@ -41,6 +42,7 @@ void doMeasurements()
         getResults();
 }
 
+// TODO: Implement this.
 void getResults()
 {
 }
@@ -49,7 +51,7 @@ void setup()
 {
         delay(5000); // This is just to have time to connect via serial to monitor events.
         btStop();
-        esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
+        esp_sleep_enable_timer_wakeup(CONFIG_TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
         Serial.begin(CONFIG_SERIAL_BAUD_RATE);
 
         Setup::tryConnection();

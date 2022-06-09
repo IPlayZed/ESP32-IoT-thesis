@@ -8,22 +8,24 @@
 #include <WiFi.h>
 #include <mqtt_client.h>
 
-// Azure IoT SDK for C includes
 #include <az_core.h>
 #include <az_iot.h>
 
 #include "SerialLogger.h"
 
 #include "AzIoTSasToken.h"
-#include "IoTConfiguration.h"
+#include "SecretsConfig.h"
 
 #include "Common.h"
 
-#define SAS_TOKEN_DURATION_IN_MINUTES 60
+#define MQTT_QOS_LEVEL_AT_MOST_ONCE 0
+#define MQTT_QOS_LEVEL_AT_LEAST_ONCE 1
+#define MQTT_QOS_LEVEL_EXACTLY_ONCE 2
+
 #define INBOUND_DATA_SIZE_BYTES DEFAULT_INBOUND_DATA_SIZE_BYTES
 #define INBOUND_DATA_SIZE_BYTES_LAST_POS (INBOUND_DATA_SIZE_BYTES - 1)
 #define AZURE_SDK_CLIENT_USER_AGENT "c/" AZ_SDK_VERSION_STRING "(ard;esp32)"
-#define MAGIC_TIMESTAMP 1510592825
+
 
 namespace Setup
 {
@@ -38,8 +40,6 @@ namespace Setup
 namespace IoTHub
 {
     void initializeIoTHubClient();
-
-    void getTelemetryPayload(az_span *payload);
 
     void sendTelemetry();
 }

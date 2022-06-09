@@ -1,31 +1,14 @@
 // Licensed under: GNU GENERAL PUBLIC LICENSE Version 2
 
-#include "Network.h"
 #include <azure_ca.h> // This must be included here, because the lib doesn't define include guards for this header file...
 #include <ArduinoJson.h>
 
+#include "Network.h"
+#include "NetworkConfig.h"
 
-static esp_mqtt_client_handle_t mqtt_client;
-// static char inbound_data[INBOUND_DATA_SIZE_BYTES]; // NOTE: This actually is not needed in our application but this would be an example of how to handle this data.
-static char telemetry_topic[128];
-uint32_t telemetry_send_count = 0;
+#define MAGIC_TIMESTAMP (uint32_t)1510592825
 
-static az_iot_hub_client client;
-static uint8_t sas_signature_buffer[256];
-static char mqtt_client_id[128];
-static char mqtt_username[128];
-static char mqtt_password[200];
-
-static const char *host = CONFIG_AZURE_FQDN;
-static const char *device_id = CONFIG_AZURE_DEVICE_ID;
-static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
-static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
-
-static AzIoTSasToken sasToken(
-    &client,
-    AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
-    AZ_SPAN_FROM_BUFFER(sas_signature_buffer),
-    AZ_SPAN_FROM_BUFFER(mqtt_password));
+static const int serialized_telemetry_message[128];
 
 namespace Setup
 {
@@ -39,7 +22,7 @@ namespace Setup
         while (WiFi.status() != WL_CONNECTED)
         {
             // TODO: Make this configurable.
-            delay(1000);
+            delay(CONFIG_WIFI_WAIT_MSEC);
             SerialPrint('.');
         }
 
@@ -55,7 +38,7 @@ namespace Setup
         while (now < MAGIC_TIMESTAMP)
         {
             // TODO: Make this configurable.
-            delay(1000);
+            delay(CONFIG_TIME_WAIT_MSEC);
             SerialPrint('.');
             now = time(nullptr);
         }
@@ -87,6 +70,17 @@ namespace Setup
 
 namespace IoTHub
 {
+    static az_iot_hub_client client;
+    static uint8_t sas_signature_buffer[256];
+    static const char *host = CONFIG_AZURE_FQDN;
+    static const char *device_id = CONFIG_AZURE_DEVICE_ID;
+
+    static AzIoTSasToken sasToken(
+        &client,
+        AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
+        AZ_SPAN_FROM_BUFFER(IoTHub::sas_signature_buffer),
+        AZ_SPAN_FROM_BUFFER(MQTT::mqtt_password));
+
     void initializeIoTHubClient(void)
     {
         LogInfo("Initializing IoT Hub client...");
@@ -111,9 +105,9 @@ namespace IoTHub
 
         size_t client_id_length;
         az_IoT_hub_result = az_iot_hub_client_get_client_id(
-            &client,
-            mqtt_client_id,
-            sizeof(mqtt_client_id) - 1,
+            &IoTHub::client,
+            MQTT::mqtt_client_id,
+            sizeof(MQTT::mqtt_client_id) - 1,
             &client_id_length);
         if (az_result_failed(az_IoT_hub_result))
         {
@@ -126,9 +120,9 @@ namespace IoTHub
         }
 
         az_IoT_hub_result = az_iot_hub_client_get_user_name(
-            &client,
-            mqtt_username,
-            sizeofarray(mqtt_username),
+            &IoTHub::client,
+            MQTT::mqtt_username,
+            sizeofarray(MQTT::mqtt_username),
             NULL);
         if (az_result_failed(az_IoT_hub_result))
         {
@@ -139,7 +133,7 @@ namespace IoTHub
         {
             LogInfo("Got MQTT client username.");
         }
-        LogInfo("Client ID: " + String(mqtt_client_id) + " Username: " + String(mqtt_username));
+        LogInfo("Client ID: " + String(MQTT::mqtt_client_id) + " Username: " + String(MQTT::mqtt_username));
     }
 
     void sendTelemetry(void)
@@ -147,10 +141,10 @@ namespace IoTHub
         LogInfo("Trying to send telemetry...");
 
         az_result result = az_iot_hub_client_telemetry_get_publish_topic(
-            &client,
+            &IoTHub::client,
             NULL,
-            telemetry_topic,
-            sizeof(telemetry_topic),
+            MQTT::telemetry_topic,
+            sizeof(MQTT::telemetry_topic),
             NULL);
         if (az_result_failed(result))
         {
@@ -159,19 +153,17 @@ namespace IoTHub
         }
 
         StaticJsonDocument<128> telemetry_msg;
-        telemetry_msg["msgCount"] = telemetry_send_count;  
+        telemetry_msg["msgCount"] = 1;  
         String serialized_telemetry_message;
         serializeJson(telemetry_msg, serialized_telemetry_message);
         LogInfo("Serialized msg: " + serialized_telemetry_message);
         result = esp_mqtt_client_publish(
-                 mqtt_client,
-                 telemetry_topic,
+                 MQTT::mqtt_client,
+                 MQTT::telemetry_topic,
                  serialized_telemetry_message.c_str(),
                  serialized_telemetry_message.length(),
                  CONFIG_MQTT_CLIENT_QOS,
                  CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
-
-        telemetry_send_count++;
         
         if (result == 0)
         {
@@ -185,6 +177,14 @@ namespace IoTHub
 }
 namespace MQTT
 {
+    static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
+    static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
+
+    static esp_mqtt_client_handle_t mqtt_client;
+    static char mqtt_client_id[128];
+    static char mqtt_username[128];
+    static char mqtt_password[200];
+    static char telemetry_topic[128];
 
     esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
     {
@@ -197,7 +197,7 @@ namespace MQTT
 
         case MQTT_EVENT_CONNECTED:
             LogInfo("MQTT event: MQTT_EVENT_CONNECTED");
-            subscribe_message_id = esp_mqtt_client_subscribe(mqtt_client,
+            subscribe_message_id = esp_mqtt_client_subscribe(MQTT::mqtt_client,
                                                              AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC,
                                                              CONFIG_MQTT_CLIENT_QOS);
 
@@ -232,15 +232,6 @@ namespace MQTT
 
         case MQTT_EVENT_DATA:
             LogInfo("MQTT event: MQTT_EVENT_DATA");
-            // NOTE: This actually is not needed in our application but this would be an example of how to handle this data.
-            /*
-            for (int i = 0; i < (INBOUND_DATA_SIZE_BYTES_LAST_POS && i < (event->topic_len)); i++)
-            {
-                inbound_data[i] = event->topic[i];
-            }
-            inbound_data[INBOUND_DATA_SIZE_BYTES_LAST_POS] = NULL_TERMINATOR;
-            LogInfo("Got topic/data named: " + String(inbound_data));
-            */
             break;
 
         case MQTT_EVENT_BEFORE_CONNECT:
@@ -255,28 +246,47 @@ namespace MQTT
         return ESP_OK;
     }
 
+    void configureMQTTConfiguration(esp_mqtt_client_config_t* mqtt_configuration)
+    {
+        memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
+        mqtt_configuration -> uri = MQTT::mqtt_broker_uri;
+        mqtt_configuration -> port = MQTT::mqtt_port;
+        mqtt_configuration -> client_id = MQTT::mqtt_client_id;
+        mqtt_configuration -> username = MQTT::mqtt_username;
+        mqtt_configuration -> password = (const char *)az_span_ptr(IoTHub::sasToken.Get());
+        mqtt_configuration -> keepalive = 30;
+        mqtt_configuration -> disable_clean_session = 0;
+        mqtt_configuration -> disable_auto_reconnect = false;
+        mqtt_configuration -> event_handle = MQTT::MQTTEventHandler;
+        mqtt_configuration -> user_context = NULL;
+        mqtt_configuration -> cert_pem = (const char *)ca_pem;
+    }
+
     void initializeMQTTClient(void)
     {
-        int token_generation_result = sasToken.Generate(SAS_TOKEN_DURATION_IN_MINUTES);
+        int token_generation_result = IoTHub::sasToken.Generate(CONFIG_SAS_TOKEN_DURATION_IN_MINUTES);
         if (token_generation_result != SAS_TOKEN_GENERATION_OK)
         {
             return LogError("SAS token generation failed with code: " + String(token_generation_result));
         }
 
-        // TODO: Refactor this config into a function call.
         esp_mqtt_client_config_t mqtt_configuration;
+        
+        /*
         memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
-        mqtt_configuration.uri = mqtt_broker_uri;
-        mqtt_configuration.port = mqtt_port;
-        mqtt_configuration.client_id = mqtt_client_id;
-        mqtt_configuration.username = mqtt_username;
-        mqtt_configuration.password = (const char *)az_span_ptr(sasToken.Get());
+        mqtt_configuration.uri = MQTT::mqtt_broker_uri;
+        mqtt_configuration.port = MQTT::mqtt_port;
+        mqtt_configuration.client_id = MQTT::mqtt_client_id;
+        mqtt_configuration.username = MQTT::mqtt_username;
+        mqtt_configuration.password = (const char *)az_span_ptr(IoTHub::sasToken.Get());
         mqtt_configuration.keepalive = 30;
         mqtt_configuration.disable_clean_session = 0;
         mqtt_configuration.disable_auto_reconnect = false;
         mqtt_configuration.event_handle = MQTT::MQTTEventHandler;
         mqtt_configuration.user_context = NULL;
-        mqtt_configuration.cert_pem = (const char *)ca_pem;
+        mqtt_configuration.cert_pem = (const char *)ca_pem;*/
+
+        configureMQTTConfiguration(&mqtt_configuration); // TODO: Check if this works.
 
         mqtt_client = esp_mqtt_client_init(&mqtt_configuration);
 
@@ -289,8 +299,7 @@ namespace MQTT
 
         if (start_result != ESP_OK)
         {
-            LogError("Could not start MQTT client with code: " + String(start_result));
-            return;
+            return LogError("Could not start MQTT client with code: " + String(start_result));
         }
         else
         {
@@ -301,11 +310,11 @@ namespace MQTT
 
     bool checkIfSasTokenInstanceIsExpired(void)
     {
-        return sasToken.IsExpired();
+        return IoTHub::sasToken.IsExpired();
     }
 
     void destroyMQTTClientInstance(void)
     {
-        (void)esp_mqtt_client_destroy(mqtt_client);
+        (void)esp_mqtt_client_destroy(MQTT::mqtt_client);
     }
 }

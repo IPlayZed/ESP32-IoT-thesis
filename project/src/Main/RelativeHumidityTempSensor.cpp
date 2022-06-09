@@ -1,15 +1,13 @@
 #include "RelativeHumidityTempSensor.h"
+#include "DHTConfig.h"
 #include "DHT.h"
 #include "DHTConfig.h"
 #include "SerialLogger.h"
 
-#define DHT_TYPE DHT11
-
-
 // TODO: Implement moving avarage (so that failed measurements do not mess up the value).
 namespace RHTempSensor
 {
-    static DHT dht_sensor(CONFIG_PIN, DHT_TYPE);
+    static DHT dht_sensor(CONFIG_PIN, CONFIG_DHT_TYPE);
 
     static bool badResult = false;
     static uint8_t moving_avarage_actual_samples = CONFIG_MEASUREMENT_TIMES;
