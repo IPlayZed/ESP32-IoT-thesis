@@ -3,6 +3,7 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+// TODO: Clean up includes.
 #include <time.h>
 
 #include <WiFi.h>
@@ -22,10 +23,12 @@
 #define MQTT_QOS_LEVEL_AT_LEAST_ONCE 1
 #define MQTT_QOS_LEVEL_EXACTLY_ONCE 2
 
+#define WIFI_TURN_OFF true
+
 namespace Network
 {
     void turnOffWiFi(void);
-    void setupNetworking(void);
+    void setupNetworking(bool turnOffWifiAfterSetup);
     void sendTelemetry(void);
 }
 

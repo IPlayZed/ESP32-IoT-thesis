@@ -11,8 +11,6 @@
 
 #define AZURE_SDK_CLIENT_USER_AGENT "c/" AZ_SDK_VERSION_STRING "(ard;esp32)"
 
-static const int serialized_telemetry_message[128];
-
 // FIXME: Some variables are not initialized in the correct order, thus resulting in a build error. They might moved into anon namespace.
 /* These are so far:
 mqtt_client
@@ -22,6 +20,26 @@ mqtt_client_id
 */
 namespace Network
 {
+    // Thesese variables are used by both the Network::MQTT:: and Network::IoTHub namespaces, so they are declared here.
+
+    
+    static char mqtt_password[200];
+    
+    static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
+    static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
+    static esp_mqtt_client_handle_t mqtt_client;
+    static char mqtt_client_id[128];
+    static char mqtt_username[128];
+    static char telemetry_topic[128];
+
+    static az_iot_hub_client client;
+    static uint8_t sas_signature_buffer[256];
+    static AzIoTSasToken sasToken(
+            &Network::client,
+            AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
+            AZ_SPAN_FROM_BUFFER(Network::sas_signature_buffer),
+            AZ_SPAN_FROM_BUFFER(Network::mqtt_password));
+    
     namespace _WiFi
     {
         void connect(void)
@@ -75,15 +93,6 @@ namespace Network
 
     namespace MQTT
     {
-        static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
-        static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
-
-        static esp_mqtt_client_handle_t mqtt_client;
-        static char mqtt_client_id[128];
-        static char mqtt_username[128];
-        static char mqtt_password[200];
-        static char telemetry_topic[128];
-
         esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
         {
             int subscribe_message_id = 0;
@@ -95,7 +104,7 @@ namespace Network
 
             case MQTT_EVENT_CONNECTED:
                 LogInfo("MQTT event: MQTT_EVENT_CONNECTED");
-                subscribe_message_id = esp_mqtt_client_subscribe(MQTT::mqtt_client,
+                subscribe_message_id = esp_mqtt_client_subscribe(Network::mqtt_client,
                                                                 AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC,
                                                                 CONFIG_MQTT_CLIENT_QOS);
 
@@ -144,14 +153,15 @@ namespace Network
             return ESP_OK;
         }
 
+// FIXME: Find out why does this cause "Core  1 panic'ed (StoreProhibited)"
         void configureMQTTConfiguration(esp_mqtt_client_config_t* mqtt_configuration)
         {
-            memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
-            mqtt_configuration -> uri = MQTT::mqtt_broker_uri;
-            mqtt_configuration -> port = MQTT::mqtt_port;
-            mqtt_configuration -> client_id = MQTT::mqtt_client_id;
-            mqtt_configuration -> username = MQTT::mqtt_username;
-            mqtt_configuration -> password = (const char *)az_span_ptr(IoTHub::sasToken.Get());
+            memset(mqtt_configuration, 0, sizeof(mqtt_configuration));
+            mqtt_configuration -> uri = Network::mqtt_broker_uri;
+            mqtt_configuration -> port = Network::mqtt_port;
+            mqtt_configuration -> client_id = Network::mqtt_client_id;
+            mqtt_configuration -> username = Network::mqtt_username;
+            mqtt_configuration -> password = (const char *)az_span_ptr(Network::sasToken.Get());
             mqtt_configuration -> keepalive = 30;
             mqtt_configuration -> disable_clean_session = 0;
             mqtt_configuration -> disable_auto_reconnect = false;
@@ -162,7 +172,7 @@ namespace Network
 
         void initializeMQTTClient(void)
         {
-            int token_generation_result = IoTHub::sasToken.Generate(CONFIG_SAS_TOKEN_DURATION_IN_MINUTES);
+            int token_generation_result = Network::sasToken.Generate(CONFIG_SAS_TOKEN_DURATION_IN_MINUTES);
             if (token_generation_result != SAS_TOKEN_GENERATION_OK)
             {
                 return LogError("SAS token generation failed with code: " + String(token_generation_result));
@@ -170,24 +180,23 @@ namespace Network
 
             esp_mqtt_client_config_t mqtt_configuration;
             
-            /*
             memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
-            mqtt_configuration.uri = MQTT::mqtt_broker_uri;
-            mqtt_configuration.port = MQTT::mqtt_port;
-            mqtt_configuration.client_id = MQTT::mqtt_client_id;
-            mqtt_configuration.username = MQTT::mqtt_username;
-            mqtt_configuration.password = (const char *)az_span_ptr(IoTHub::sasToken.Get());
+            mqtt_configuration.uri = Network::mqtt_broker_uri;
+            mqtt_configuration.port = Network::mqtt_port;
+            mqtt_configuration.client_id = Network::mqtt_client_id;
+            mqtt_configuration.username = Network::mqtt_username;
+            mqtt_configuration.password = (const char *)az_span_ptr(Network::sasToken.Get());
             mqtt_configuration.keepalive = 30;
             mqtt_configuration.disable_clean_session = 0;
             mqtt_configuration.disable_auto_reconnect = false;
             mqtt_configuration.event_handle = MQTT::MQTTEventHandler;
             mqtt_configuration.user_context = NULL;
-            mqtt_configuration.cert_pem = (const char *)ca_pem;*/
-
-            configureMQTTConfiguration(&mqtt_configuration); // TODO: Check if this works.
+            mqtt_configuration.cert_pem = (const char *)ca_pem;
+            
+            //configureMQTTConfiguration(&mqtt_configuration); // FIXME: Find out why does this cause "Core  1 panic'ed (StoreProhibited)"
 
             mqtt_client = esp_mqtt_client_init(&mqtt_configuration);
-
+            
             if (mqtt_client == NULL)
             {
                 return LogError("Failed creating MQTT client.");;
@@ -208,27 +217,22 @@ namespace Network
 
         bool checkIfSasTokenInstanceIsExpired(void)
         {
-            return IoTHub::sasToken.IsExpired();
+            return Network::sasToken.IsExpired();
         }
 
         void destroyMQTTClientInstance(void)
         {
-            (void)esp_mqtt_client_destroy(MQTT::mqtt_client);
+            (void)esp_mqtt_client_destroy(Network::mqtt_client);
         }
     }
 
     namespace IoTHub
     {
-        static az_iot_hub_client client;
-        static uint8_t sas_signature_buffer[256];
+        // FIXME: Move this into the same namesapce as sasToken
         static const char *host = CONFIG_AZURE_FQDN;
         static const char *device_id = CONFIG_AZURE_DEVICE_ID;
 
-        static AzIoTSasToken sasToken(
-            &client,
-            AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
-            AZ_SPAN_FROM_BUFFER(IoTHub::sas_signature_buffer),
-            AZ_SPAN_FROM_BUFFER(MQTT::mqtt_password));
+        // FIXME: Move this into Network:: as it is a circular dependency in Network::IoTHub:: and Network::MQTT::
 
         void initializeIoTHubClient(void)
         {
@@ -254,9 +258,9 @@ namespace Network
 
             size_t client_id_length;
             az_IoT_hub_result = az_iot_hub_client_get_client_id(
-                &IoTHub::client,
-                MQTT::mqtt_client_id,
-                sizeof(MQTT::mqtt_client_id) - 1,
+                &Network::client,
+                Network::mqtt_client_id,
+                sizeof(Network::mqtt_client_id) - 1,
                 &client_id_length);
             if (az_result_failed(az_IoT_hub_result))
             {
@@ -269,9 +273,9 @@ namespace Network
             }
 
             az_IoT_hub_result = az_iot_hub_client_get_user_name(
-                &IoTHub::client,
-                MQTT::mqtt_username,
-                sizeofarray(MQTT::mqtt_username),
+                &Network::client,
+                Network::mqtt_username,
+                sizeofarray(Network::mqtt_username),
                 NULL);
             if (az_result_failed(az_IoT_hub_result))
             {
@@ -282,7 +286,7 @@ namespace Network
             {
                 LogInfo("Got MQTT client username.");
             }
-            LogInfo("Client ID: " + String(MQTT::mqtt_client_id) + " Username: " + String(MQTT::mqtt_username));
+            LogInfo("Client ID: " + String(Network::mqtt_client_id) + " Username: " + String(Network::mqtt_username));
         }
 
         void sendTelemetry(void)
@@ -290,10 +294,10 @@ namespace Network
             LogInfo("Trying to send telemetry...");
 
             az_result result = az_iot_hub_client_telemetry_get_publish_topic(
-                &IoTHub::client,
+                &Network::client,
                 NULL,
-                MQTT::telemetry_topic,
-                sizeof(MQTT::telemetry_topic),
+                Network::telemetry_topic,
+                sizeof(Network::telemetry_topic),
                 NULL);
             if (az_result_failed(result))
             {
@@ -307,8 +311,8 @@ namespace Network
             serializeJson(telemetry_msg, serialized_telemetry_message);
             LogInfo("Serialized msg: " + serialized_telemetry_message);
             result = esp_mqtt_client_publish(
-                    MQTT::mqtt_client,
-                    MQTT::telemetry_topic,
+                    Network::mqtt_client,
+                    Network::telemetry_topic,
                     serialized_telemetry_message.c_str(),
                     serialized_telemetry_message.length(),
                     CONFIG_MQTT_CLIENT_QOS,
@@ -330,11 +334,12 @@ namespace Network
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF);
     }
-    void setupNetworking(void)
+    void setupNetworking(bool turnOffWifiAfterSetup = false)
     {
         Network::_WiFi::connect();
         Network::SNTP::setup();
         Network::IoTHub::initializeIoTHubClient();
+        if (turnOffWifiAfterSetup) Network::turnOffWiFi();
     }
 
     void sendTelemetry(void) 

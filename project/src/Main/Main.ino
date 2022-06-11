@@ -11,41 +11,39 @@
 // This namespace contains the tasks to be completed by the sketch.
 namespace Tasks
 {
-        void taskConfigureLocalPeripherials(void* RTOSParameters)
+        void taskConfigureLocalPeripherials()
         {
                 esp_sleep_enable_timer_wakeup(CONFIG_TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
                 Serial.begin(CONFIG_SERIAL_BAUD_RATE);
                 RHTempSensor::initializeSensor();
         }
-        void taskInitializeConnection(void* RTOSParameters)
+        void taskInitializeConnection()
         {
                 btStop();
-                Network::setupNetworking();
-                Network::turnOffWiFi();
+                Network::setupNetworking(true);
         }
-        void taskSendTelemetry(void* RTOSParameters)
+        void taskSendTelemetry()
         {
                 Network::sendTelemetry();
         }
-        void taskDoMeasurements(void* RTOSParameters)
+        void taskDoMeasurements()
         {
                 RHTempSensor::makeMeasurements();
-                delay(2000); // TODO: Is this wait really needed?
                 // TODO: Handle results.
         }
 }
 
 void setup()
 {
-        delay(5000); // This is just to have time to connect via serial to monitor events.
-        Tasks::taskConfigureLocalPeripherials(nullptr);
-        Tasks::taskInitializeConnection(nullptr);
+        DebugDelayForSerialConnection(CONFIG_DELAY_FOR_SERIAL_CONNECTION);
+        Tasks::taskConfigureLocalPeripherials();
+        Tasks::taskInitializeConnection();
 }
 
 void loop()
 {
-        Tasks::taskDoMeasurements(nullptr);
-        Tasks::taskSendTelemetry(nullptr);
+        Tasks::taskDoMeasurements();
+        Tasks::taskSendTelemetry();
         esp_light_sleep_start();
         LogInfo("Woke up from sleep!");
 }

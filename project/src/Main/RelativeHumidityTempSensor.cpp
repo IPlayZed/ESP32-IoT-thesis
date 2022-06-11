@@ -5,6 +5,7 @@
 #include "SerialLogger.h"
 
 // TODO: Implement moving avarage (so that failed measurements do not mess up the value).
+// TODO: Decouple from DHT sensor libs.
 namespace RHTempSensor
 {
     static DHT dht_sensor(CONFIG_PIN, CONFIG_DHT_TYPE);
