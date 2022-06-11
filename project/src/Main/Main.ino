@@ -35,7 +35,7 @@ namespace Tasks
 
 void setup()
 {
-        DebugDelayForSerialConnection(CONFIG_DELAY_FOR_SERIAL_CONNECTION);
+        DelayForSerialConnection(CONFIG_DELAY_FOR_SERIAL_CONNECTION);
         Tasks::taskConfigureLocalPeripherials();
         Tasks::taskInitializeConnection();
 }

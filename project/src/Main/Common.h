@@ -30,13 +30,15 @@ uint32_t getSecsSinceEpoch();
     #define LogError(text) Logger.Error(text)
     #define SerialPrint(text) Serial.print(text)
     #define SerialPrintln() Serial.println()
-    #define DebugDelayForSerialConnection(time) delay(time);
+    #define SerialPrintlnTimeinfo(timeinfo, formattedText) Serial.println(timeinfo, formattedText)
+    #define DelayForSerialConnection(time) delay(time);
 #else
     #define LogInfo(text)
     #define LogError(text)
     #define SerialPrint(text)
     #define SerialPrintln()
-    #define DebugDelayForSerialConnection(time)
+    #define SerialPrintln(timeinfo, formattedText)
+    #define DelayForSerialConnection(time)
 #endif
 
 #endif

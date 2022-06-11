@@ -10,21 +10,13 @@
 #define MAGIC_TIMESTAMP (uint32_t)1510592825
 
 #define AZURE_SDK_CLIENT_USER_AGENT "c/" AZ_SDK_VERSION_STRING "(ard;esp32)"
+#define TIMEINFO_FORMAT_STRING "%A, %B %d %Y %H:%M:%S"
 
-// FIXME: Some variables are not initialized in the correct order, thus resulting in a build error. They might moved into anon namespace.
-/* These are so far:
-mqtt_client
-telemetry_topic
-mqtt_username
-mqtt_client_id
-*/
 namespace Network
 {
     // Thesese variables are used by both the Network::MQTT:: and Network::IoTHub namespaces, so they are declared here.
 
-    
     static char mqtt_password[200];
-    
     static const int mqtt_port = AZ_IOT_DEFAULT_MQTT_CONNECT_PORT;
     static const char *mqtt_broker_uri = "mqtts://" CONFIG_AZURE_FQDN;
     static esp_mqtt_client_handle_t mqtt_client;
@@ -83,10 +75,7 @@ namespace Network
             else
             {
                 LogInfo("Got local time: ");
-                // TODO: Better preprocessing conditional.
-                #ifdef DEBUG_MODE
-                Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-                #endif
+                SerialPrintlnTimeinfo(&timeinfo, TIMEINFO_FORMAT_STRING);
             }
         }
     }
@@ -369,6 +358,5 @@ namespace Network
         LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(CONFIG_TIME_TO_SLEEP_IN_S) + "...\n");
         Network::MQTT::destroyMQTTClientInstance();
         WiFi.disconnect(true, true);
-        delay(2000); // TODO: Is this needed at all?
     }
 }
