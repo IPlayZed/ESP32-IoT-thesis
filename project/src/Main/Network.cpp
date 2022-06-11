@@ -323,7 +323,7 @@ namespace Network
         WiFi.disconnect(true);
         WiFi.mode(WIFI_OFF);
     }
-    void setupNetworking(bool turnOffWifiAfterSetup = false)
+    void setupNetworking(bool turnOffWifiAfterSetup)
     {
         Network::_WiFi::connect();
         Network::SNTP::setup();

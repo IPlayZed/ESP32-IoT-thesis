@@ -28,7 +28,7 @@
 namespace Network
 {
     void turnOffWiFi(void);
-    void setupNetworking(bool turnOffWifiAfterSetup);
+    void setupNetworking(bool turnOffWifiAfterSetup = false);
     void sendTelemetry(void);
 }
 
