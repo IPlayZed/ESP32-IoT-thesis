@@ -9,6 +9,7 @@ namespace Tasks
 {
         void taskConfigureLocalPeripherials(void* RTOSparameter)
         {
+                setCpuFrequencyMhz(CPU_FREQ_POWER_SAVER);
                 esp_sleep_enable_timer_wakeup(CONFIG_TIME_TO_SLEEP_IN_S * uS_TO_S_FACTOR);
                 Serial.begin(CONFIG_SERIAL_BAUD_RATE);
                 RHTempSensor::initializeSensor();
@@ -25,7 +26,6 @@ namespace Tasks
         void taskDoMeasurements(void* RTOSparameter)
         {
                 RHTempSensor::makeMeasurements();
-                // TODO: Handle results.
         }
 
         namespace Helpers

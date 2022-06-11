@@ -4,6 +4,8 @@
 #include "DHTConfig.h"
 #include "SerialLogger.h"
 
+#define CPU_FREQ_DHT_COMPLIANT 240
+
 // TODO: Implement moving avarage (so that failed measurements do not mess up the value).
 // TODO: Decouple from DHT sensor libs.
 namespace RHTempSensor
@@ -80,6 +82,8 @@ namespace RHTempSensor
 
     void makeMeasurements(void)
     {
+        // TODO: Find out why DHT11 only works when CPU freq is at 240 MHz.
+        setCpuFrequencyMhz(CPU_FREQ_DHT_COMPLIANT);
         for (uint8_t i = 0; i < CONFIG_MEASUREMENT_TIMES; i++)
         {
             RHTempSensor::_readFromSensor(arr_humidity + i, dht_sensor.readHumidity());
@@ -92,6 +96,7 @@ namespace RHTempSensor
 
             delay(DHT_SAMPLING_PERIOD);
         }
+        setCpuFrequencyMhz(CPU_FREQ_POWER_SAVER);
     }
 
     float getHumidity(void)
