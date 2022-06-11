@@ -331,7 +331,7 @@ namespace Network
         if (turnOffWifiAfterSetup) Network::turnOffWiFi();
     }
 
-    void sendTelemetry(void) 
+    void sendTelemetry(char* telemetry_message)
     {
         if (WiFi.getMode() == WIFI_OFF)
         {

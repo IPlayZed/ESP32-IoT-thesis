@@ -24,11 +24,20 @@
 #define MQTT_QOS_LEVEL_EXACTLY_ONCE 2
 
 #define WIFI_TURN_OFF true
+#define WIFI_KEEP_ON false
 
 namespace Network
 {
+    namespace Telemetry
+    {
+        typedef struct Telemetry {
+            float temperature;
+            float humidity;
+            float CO;
+        } Telemetry_t;
+    }
     void turnOffWiFi(void);
-    void setupNetworking(bool turnOffWifiAfterSetup = false);
+    void setupNetworking(bool turnOffWifiAfterSetup = WIFI_KEEP_ON);
     void sendTelemetry(void);
 }
 
