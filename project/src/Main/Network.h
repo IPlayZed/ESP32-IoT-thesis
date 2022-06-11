@@ -30,15 +30,11 @@ namespace Network
 {
     namespace Telemetry
     {
-        typedef struct Telemetry {
-            float temperature;
-            float humidity;
-            float CO;
-        } Telemetry_t;
+        typedef struct telemetryData telemetryData_t;
     }
     void turnOffWiFi(void);
     void setupNetworking(bool turnOffWifiAfterSetup = WIFI_KEEP_ON);
-    void sendTelemetry(void);
+    void sendTelemetry(Network::Telemetry::telemetryData_t* telemetryData);
 }
 
 #endif

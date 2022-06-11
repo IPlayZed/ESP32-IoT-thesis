@@ -31,6 +31,15 @@ namespace Network
             AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
             AZ_SPAN_FROM_BUFFER(Network::sas_signature_buffer),
             AZ_SPAN_FROM_BUFFER(Network::mqtt_password));
+
+    namespace Telemetry
+    {
+        typedef struct telemetryData {
+            float temperature;
+            float humidity;
+            float CO;
+        } telemetryData_t;
+    }
     
     namespace _WiFi
     {
@@ -278,7 +287,7 @@ namespace Network
             LogInfo("Client ID: " + String(Network::mqtt_client_id) + " Username: " + String(Network::mqtt_username));
         }
 
-        void sendTelemetry(void)
+        void sendTelemetry(Network::Telemetry::telemetryData_t* telemetryData)
         {
             LogInfo("Trying to send telemetry...");
 
