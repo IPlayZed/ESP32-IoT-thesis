@@ -39,11 +39,18 @@ namespace Network
             float humidity;
             float CO;
         } telemetryData_t;
+
+        char _serializedTelemetryData[CONFIG_TELEMETRY_DATA_MAXIMUM_SIZE];
+
+        char* getSerializedTelemetryDataPtr(void)
+        {
+            return Network::Telemetry::_serializedTelemetryData;
+        }
     }
     
     namespace _WiFi
     {
-        void connect(void)
+        void _connect(void)
         {
             LogInfo("Trying to connect to " + String(CONFIG_WIFI_SSID));
             WiFi.mode(WIFI_STA);
@@ -62,7 +69,7 @@ namespace Network
 
     namespace SNTP
     {
-        void setup(void)
+        void _setup(void)
         {
             LogInfo("Initializing time via SNTP...");
             configTime(TIME_ZONE_GMT_OFFSET * TIME_S_TO_H_FACTOR, TIME_DAYLIGHT_SAVING_SECS, NTP_SERVERS_URL);
@@ -91,7 +98,7 @@ namespace Network
 
     namespace MQTT
     {
-        esp_err_t MQTTEventHandler(esp_mqtt_event_handle_t event)
+        esp_err_t _MQTTEventHandler(esp_mqtt_event_handle_t event)
         {
             int subscribe_message_id = 0;
             switch (event->event_id)
@@ -151,8 +158,8 @@ namespace Network
             return ESP_OK;
         }
 
-// FIXME: Find out why does this cause "Core  1 panic'ed (StoreProhibited)"
-        void configureMQTTConfiguration(esp_mqtt_client_config_t* mqtt_configuration)
+        // FIXME: Find out why does this cause "Core  1 panic'ed (StoreProhibited)"
+        void _configureMQTTConfiguration(esp_mqtt_client_config_t* mqtt_configuration)
         {
             memset(mqtt_configuration, 0, sizeof(mqtt_configuration));
             mqtt_configuration -> uri = Network::mqtt_broker_uri;
@@ -163,12 +170,12 @@ namespace Network
             mqtt_configuration -> keepalive = 30;
             mqtt_configuration -> disable_clean_session = 0;
             mqtt_configuration -> disable_auto_reconnect = false;
-            mqtt_configuration -> event_handle = MQTT::MQTTEventHandler;
+            mqtt_configuration -> event_handle = MQTT::_MQTTEventHandler;
             mqtt_configuration -> user_context = NULL;
             mqtt_configuration -> cert_pem = (const char *)ca_pem;
         }
 
-        void initializeMQTTClient(void)
+        void _initializeMQTTClient(void)
         {
             int token_generation_result = Network::sasToken.Generate(CONFIG_SAS_TOKEN_DURATION_IN_MINUTES);
             if (token_generation_result != SAS_TOKEN_GENERATION_OK)
@@ -187,7 +194,7 @@ namespace Network
             mqtt_configuration.keepalive = 30;
             mqtt_configuration.disable_clean_session = 0;
             mqtt_configuration.disable_auto_reconnect = false;
-            mqtt_configuration.event_handle = MQTT::MQTTEventHandler;
+            mqtt_configuration.event_handle = MQTT::_MQTTEventHandler;
             mqtt_configuration.user_context = NULL;
             mqtt_configuration.cert_pem = (const char *)ca_pem;
             
@@ -213,12 +220,12 @@ namespace Network
             }
         };
 
-        bool checkIfSasTokenInstanceIsExpired(void)
+        bool _checkIfSasTokenInstanceIsExpired(void)
         {
             return Network::sasToken.IsExpired();
         }
 
-        void destroyMQTTClientInstance(void)
+        void _destroyMQTTClientInstance(void)
         {
             (void)esp_mqtt_client_destroy(Network::mqtt_client);
         }
@@ -226,13 +233,7 @@ namespace Network
 
     namespace IoTHub
     {
-        // FIXME: Move this into the same namesapce as sasToken
-        static const char *host = CONFIG_AZURE_FQDN;
-        static const char *device_id = CONFIG_AZURE_DEVICE_ID;
-
-        // FIXME: Move this into Network:: as it is a circular dependency in Network::IoTHub:: and Network::MQTT::
-
-        void initializeIoTHubClient(void)
+        void _initializeIoTHubClient(void)
         {
             LogInfo("Initializing IoT Hub client...");
 
@@ -241,8 +242,8 @@ namespace Network
 
             az_result az_IoT_hub_result = az_iot_hub_client_init(
                 &client,
-                az_span_create((uint8_t *)host, strlen(host)),
-                az_span_create((uint8_t *)device_id, strlen(device_id)),
+                az_span_create((uint8_t *)CONFIG_AZURE_FQDN, strlen(CONFIG_AZURE_FQDN)),
+                az_span_create((uint8_t *)CONFIG_AZURE_DEVICE_ID, strlen(CONFIG_AZURE_DEVICE_ID)),
                 &IoTHubClientOptions);
             if (az_result_failed(az_IoT_hub_result))
             {
@@ -287,7 +288,7 @@ namespace Network
             LogInfo("Client ID: " + String(Network::mqtt_client_id) + " Username: " + String(Network::mqtt_username));
         }
 
-        void sendTelemetry(Network::Telemetry::telemetryData_t* telemetryData)
+        void _sendTelemetry(char* serializedTelemetryData)
         {
             LogInfo("Trying to send telemetry...");
 
@@ -303,16 +304,16 @@ namespace Network
                 return;
             }
 
-            StaticJsonDocument<128> telemetry_msg;
-            telemetry_msg["msgCount"] = 1;  
-            String serialized_telemetry_message;
-            serializeJson(telemetry_msg, serialized_telemetry_message);
-            LogInfo("Serialized msg: " + serialized_telemetry_message);
+            if (serializedTelemetryData == nullptr)
+            {
+                return LogError("The serialized data was null.");
+            }
+
             result = esp_mqtt_client_publish(
                     Network::mqtt_client,
                     Network::telemetry_topic,
-                    serialized_telemetry_message.c_str(),
-                    serialized_telemetry_message.length(),
+                    serializedTelemetryData,
+                    strlen(serializedTelemetryData),
                     CONFIG_MQTT_CLIENT_QOS,
                     CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
             
@@ -334,13 +335,35 @@ namespace Network
     }
     void setupNetworking(bool turnOffWifiAfterSetup)
     {
-        Network::_WiFi::connect();
-        Network::SNTP::setup();
-        Network::IoTHub::initializeIoTHubClient();
+        Network::_WiFi::_connect();
+        Network::SNTP::_setup();
+        Network::IoTHub::_initializeIoTHubClient();
         if (turnOffWifiAfterSetup) Network::turnOffWiFi();
     }
 
-    void sendTelemetry(char* telemetry_message)
+    char* processTelemetryData(Network::Telemetry::telemetryData_t* telemetryData, char* serializationLocation)
+    {
+        if (telemetryData == nullptr)
+        {
+            LogError("Telemetry data was null.");
+            return nullptr;
+        }
+        else if (serializationLocation == nullptr);
+        {
+            LogError("Serialization location was null.");
+            return nullptr;
+        }
+        
+        StaticJsonDocument<128> telemetry_message;
+        telemetry_message[CONFIG_TELEMETRY_DATA_TEMPERATURE_ID] = telemetryData->temperature;
+        telemetry_message[CONFIG_TELEMETRY_DATA_HUMIDITY_ID] = telemetryData->humidity;
+        telemetry_message[CONFIG_TELEMETRY_DATA_CO_ID] = telemetryData->CO;
+        serializeJson(telemetry_message, serializationLocation);
+        LogInfo("Serialized message: \"" + String(serializationLocation) + "\"");
+        return serializationLocation;
+    }
+
+    void sendTelemetry(char* serializedTelemetryData)
     {
         if (WiFi.getMode() == WIFI_OFF)
         {
@@ -351,21 +374,21 @@ namespace Network
         if (WiFi.status() != WL_CONNECTED)
         {
             LogInfo("WiFi is not connected to an AP, trying to reconnect.");
-            Network::_WiFi::connect();
-            (void)Network::MQTT::initializeMQTTClient();
+            Network::_WiFi::_connect();
+            Network::MQTT::_initializeMQTTClient();
         }
-        else if (Network::MQTT::checkIfSasTokenInstanceIsExpired())
+        else if (Network::MQTT::_checkIfSasTokenInstanceIsExpired())
         {
             LogInfo("SAS token expired; reconnecting with a new one.");
-            Network::MQTT::destroyMQTTClientInstance();
-            Network::MQTT::initializeMQTTClient();
+            Network::MQTT::_destroyMQTTClientInstance();
+            Network::MQTT::_initializeMQTTClient();
         }
 
         LogInfo("Task now trying to send telemetry....");
-        Network::IoTHub::sendTelemetry();
+        Network::IoTHub::_sendTelemetry(serializedTelemetryData);
 
         LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(CONFIG_TIME_TO_SLEEP_IN_S) + "...\n");
-        Network::MQTT::destroyMQTTClientInstance();
+        Network::MQTT::_destroyMQTTClientInstance();
         WiFi.disconnect(true, true);
     }
 }
