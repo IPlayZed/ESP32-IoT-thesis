@@ -32,21 +32,7 @@ namespace Network
             AZ_SPAN_FROM_BUFFER(Network::sas_signature_buffer),
             AZ_SPAN_FROM_BUFFER(Network::mqtt_password));
 
-    namespace Telemetry
-    {
-        typedef struct telemetryData {
-            float temperature;
-            float humidity;
-            float CO;
-        } telemetryData_t;
-
-        char _serializedTelemetryData[CONFIG_TELEMETRY_DATA_MAXIMUM_SIZE];
-
-        char* getSerializedTelemetryDataPtr(void)
-        {
-            return Network::Telemetry::_serializedTelemetryData;
-        }
-    }
+    static char serializedTelemetryData[CONFIG_TELEMETRY_DATA_MAXIMUM_SIZE];
     
     namespace _WiFi
     {
@@ -288,7 +274,7 @@ namespace Network
             LogInfo("Client ID: " + String(Network::mqtt_client_id) + " Username: " + String(Network::mqtt_username));
         }
 
-        void _sendTelemetry(char* serializedTelemetryData)
+        void _sendTelemetry()
         {
             LogInfo("Trying to send telemetry...");
 
@@ -312,8 +298,8 @@ namespace Network
             result = esp_mqtt_client_publish(
                     Network::mqtt_client,
                     Network::telemetry_topic,
-                    serializedTelemetryData,
-                    strlen(serializedTelemetryData),
+                    Network::serializedTelemetryData,
+                    strlen(Network::serializedTelemetryData),
                     CONFIG_MQTT_CLIENT_QOS,
                     CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
             
@@ -328,6 +314,54 @@ namespace Network
         }
     }
 
+    namespace Telemetry
+    {
+        void processTelemetryData(Network::Telemetry::telemetryData_t* telemetryData)
+        {
+            if (telemetryData == nullptr)
+            {
+                return LogError("Telemetry data was null.");
+            }
+
+            StaticJsonDocument<CONFIG_TELEMETRY_DATA_MAXIMUM_SIZE> telemetry_message;
+            telemetry_message[CONFIG_TELEMETRY_DATA_TEMPERATURE_ID] = telemetryData->temperature;
+            telemetry_message[CONFIG_TELEMETRY_DATA_HUMIDITY_ID] = telemetryData->humidity;
+            telemetry_message[CONFIG_TELEMETRY_DATA_CO_ID] = telemetryData->CO;
+            serializeJson(telemetry_message, serializedTelemetryData);
+
+            LogInfo("Serialized message: \"" + String(serializedTelemetryData) + "\"");
+        }
+
+        void sendTelemetry()
+        {
+            if (WiFi.getMode() == WIFI_OFF)
+            {
+                LogInfo("WiFi was turned off, turning on as station again for telemetry.");
+                WiFi.mode(WIFI_STA);
+            }
+            
+            if (WiFi.status() != WL_CONNECTED)
+            {
+                LogInfo("WiFi is not connected to an AP, trying to reconnect.");
+                Network::_WiFi::_connect();
+                Network::MQTT::_initializeMQTTClient();
+            }
+            else if (Network::MQTT::_checkIfSasTokenInstanceIsExpired())
+            {
+                LogInfo("SAS token expired; reconnecting with a new one.");
+                Network::MQTT::_destroyMQTTClientInstance();
+                Network::MQTT::_initializeMQTTClient();
+            }
+
+            LogInfo("Task now trying to send telemetry....");
+            Network::IoTHub::_sendTelemetry();
+
+            LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(CONFIG_TIME_TO_SLEEP_IN_S) + "...\n");
+            Network::MQTT::_destroyMQTTClientInstance();
+            WiFi.disconnect(true, true);
+        }
+    }
+
     void turnOffWiFi(void)
     {
         WiFi.disconnect(true);
@@ -339,56 +373,5 @@ namespace Network
         Network::SNTP::_setup();
         Network::IoTHub::_initializeIoTHubClient();
         if (turnOffWifiAfterSetup) Network::turnOffWiFi();
-    }
-
-    char* processTelemetryData(Network::Telemetry::telemetryData_t* telemetryData, char* serializationLocation)
-    {
-        if (telemetryData == nullptr)
-        {
-            LogError("Telemetry data was null.");
-            return nullptr;
-        }
-        else if (serializationLocation == nullptr);
-        {
-            LogError("Serialization location was null.");
-            return nullptr;
-        }
-        
-        StaticJsonDocument<128> telemetry_message;
-        telemetry_message[CONFIG_TELEMETRY_DATA_TEMPERATURE_ID] = telemetryData->temperature;
-        telemetry_message[CONFIG_TELEMETRY_DATA_HUMIDITY_ID] = telemetryData->humidity;
-        telemetry_message[CONFIG_TELEMETRY_DATA_CO_ID] = telemetryData->CO;
-        serializeJson(telemetry_message, serializationLocation);
-        LogInfo("Serialized message: \"" + String(serializationLocation) + "\"");
-        return serializationLocation;
-    }
-
-    void sendTelemetry(char* serializedTelemetryData)
-    {
-        if (WiFi.getMode() == WIFI_OFF)
-        {
-            LogInfo("WiFi was turned off, turning on as station again for telemetry.");
-            WiFi.mode(WIFI_STA);
-        }
-        
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            LogInfo("WiFi is not connected to an AP, trying to reconnect.");
-            Network::_WiFi::_connect();
-            Network::MQTT::_initializeMQTTClient();
-        }
-        else if (Network::MQTT::_checkIfSasTokenInstanceIsExpired())
-        {
-            LogInfo("SAS token expired; reconnecting with a new one.");
-            Network::MQTT::_destroyMQTTClientInstance();
-            Network::MQTT::_initializeMQTTClient();
-        }
-
-        LogInfo("Task now trying to send telemetry....");
-        Network::IoTHub::_sendTelemetry(serializedTelemetryData);
-
-        LogInfo("Telemetry sending done disconnecting WiFi, and entering deep sleep in 2 seconds for " + String(CONFIG_TIME_TO_SLEEP_IN_S) + "...\n");
-        Network::MQTT::_destroyMQTTClientInstance();
-        WiFi.disconnect(true, true);
     }
 }

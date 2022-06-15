@@ -39,7 +39,7 @@ uint32_t getSecsSinceEpoch();
     #define LogError(text)
     #define SerialPrint(text)
     #define SerialPrintln()
-    #define SerialPrintln(timeinfo, formattedText)
+    #define SerialPrintlnTimeinfo(timeinfo, formattedText)
     #define DelayForSerialConnection(time)
 #endif
 

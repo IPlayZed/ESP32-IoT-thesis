@@ -31,19 +31,14 @@ namespace Network
 {
     namespace Telemetry
     {
-        //typedef struct telemetryData telemetryData_t; // TODO: Ok, how tf do I make this accessible from other files.
-        // This is ugly, I would prefer the one before.
-        // NOTE: This might be needed if we want to manipulate this struct from other TUs.
         typedef struct telemetryData {
             float temperature;
             float humidity;
             float CO;
         } telemetryData_t;
 
-        char* getSerializedTelemetryDataPtr(void);
-        // TODO: Move these into the correct namespace in the source.
-        char* processTelemetryData(Network::Telemetry::telemetryData_t* telemetryData, char* serializationLocation);
-        void sendTelemetry(char* serializedTelemetryData);
+        void processTelemetryData(Network::Telemetry::telemetryData_t* telemetryData);
+        void sendTelemetry();
     }
     void turnOffWiFi(void);
     void setupNetworking(bool turnOffWifiAfterSetup = WIFI_KEEP_ON);
