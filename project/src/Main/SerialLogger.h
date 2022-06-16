@@ -5,10 +5,10 @@
 #define SERIALLOGGER_H
 
 #include <Arduino.h>
-#include "Common.h"
+#include "CommonConfig.h"
 
 #ifndef SERIAL_LOGGER_BAUD_RATE
-#define SERIAL_LOGGER_BAUD_RATE DEFAULT_SERIAL_BAUD_RATE
+#define SERIAL_LOGGER_BAUD_RATE CONFIG_SERIAL_BAUD_RATE
 #endif
 
 class SerialLogger
