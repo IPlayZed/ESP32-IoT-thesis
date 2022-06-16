@@ -108,7 +108,7 @@ namespace RHTempSensor
         }
         uint8_t oldval = RHTempSensor::moving_avarage_actual_samples;
         RHTempSensor::moving_avarage_actual_samples = CONFIG_MEASUREMENT_TIMES;
-        return average / oldval;
+        return average / (float)oldval;
     }
 
     float getTemperature(void)
@@ -116,10 +116,10 @@ namespace RHTempSensor
         float average = 0;
         for (uint8_t i = 0; i < CONFIG_MEASUREMENT_TIMES; i++)
         {
-            average += RHTempSensor::arr_humidity[i];
+            average += RHTempSensor::arr_temperature[i];
         }
         uint8_t oldval = RHTempSensor::moving_avarage_actual_samples;
         RHTempSensor::moving_avarage_actual_samples = CONFIG_MEASUREMENT_TIMES;
-        return average / oldval;
+        return average / (float)oldval;
     }
 }

@@ -41,9 +41,15 @@ namespace Network
             LogInfo("Trying to connect to " + String(CONFIG_WIFI_SSID));
             WiFi.mode(WIFI_STA);
             WiFi.begin(CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
-    
+            uint8_t wait_tick = 0;
             while (WiFi.status() != WL_CONNECTED)
             {
+                wait_tick++;
+                if (wait_tick > CONFIG_WIFI_WAIT_TICKS)
+                {
+                    ESP.restart();
+                }
+                
                 delay(CONFIG_WIFI_WAIT_MSEC);
                 SerialPrint('.');
             }
@@ -60,8 +66,14 @@ namespace Network
             LogInfo("Initializing time via SNTP...");
             configTime(TIME_ZONE_GMT_OFFSET * TIME_S_TO_H_FACTOR, TIME_DAYLIGHT_SAVING_SECS, NTP_SERVERS_URL);
             time_t now = time(NULL);
+            uint8_t wait_tick = 0;
             while (now < MAGIC_TIMESTAMP)
             {
+                wait_tick++;
+                if (wait_tick > CONFIG_SNTP_WAIT_TICKS)
+                {
+                    ESP.restart();
+                }
                 delay(CONFIG_TIME_WAIT_MSEC);
                 SerialPrint('.');
                 now = time(nullptr);

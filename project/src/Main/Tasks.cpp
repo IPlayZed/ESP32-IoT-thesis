@@ -21,12 +21,11 @@ namespace Tasks
         }
         void taskSendTelemetry(void* RTOSparameter)
         {
-                // NOTE: This is only POC.
-                Network::Telemetry::telemetryData_t dummyData; // Dummy data for testing.
-                dummyData.temperature = (float)1.1;
-                dummyData.humidity = (float)2.2;
-                dummyData.CO = (float)3.3;
-                Network::Telemetry::processTelemetryData(&dummyData);
+                Network::Telemetry::telemetryData_t sensorData;
+                sensorData.temperature = RHTempSensor::getTemperature();
+                sensorData.humidity = RHTempSensor::getHumidity();
+                sensorData.CO = (float)3.3; // Dummy data for testing.
+                Network::Telemetry::processTelemetryData(&sensorData);
                 Network::Telemetry::sendTelemetry();
         }
         void taskDoMeasurements(void* RTOSparameter)
