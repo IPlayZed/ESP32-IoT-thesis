@@ -46,10 +46,20 @@ static void writeTime()
 
 SerialLogger::SerialLogger() { Serial.begin(SERIAL_LOGGER_BAUD_RATE); }
 
+// TODO: Use conditional compilation here instead of wrapping this into one.
+// TODO: Wrap these into one function call rather.
+
 void SerialLogger::Info(String message)
 {
   writeTime();
   Serial.print(" [INFO] ");
+  Serial.println(message);
+}
+
+void SerialLogger::Warning(String message)
+{
+  writeTime();
+  Serial.print(" [WARNING] ");
   Serial.println(message);
 }
 
