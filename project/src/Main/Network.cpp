@@ -2,9 +2,21 @@
 
 #include <azure_ca.h> // This must be included here, because the lib doesn't define include guards for this header file...
 #include <ArduinoJson.h>
+#include <time.h>
+#include <WiFi.h>
+#include <mqtt_client.h>
+
+#include <az_core.h>
+#include <az_iot.h>
 
 #include "CommonConfig.h"
 #include "Network.h"
+#include "NetworkConfig.h"
+
+#include "AzIoTSasToken.h"
+#include "SecretsConfig.h"
+
+#include "SerialLogger.h"
 #include "NetworkConfig.h"
 
 #define MAGIC_TIMESTAMP (uint32_t)1510592825

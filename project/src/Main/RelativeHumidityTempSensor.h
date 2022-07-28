@@ -4,7 +4,6 @@
 #include "Common.h"
 #include "RelativeHumidityTempSensorConfig.h"
 
-
 namespace RHTempSensor
 {
     static float humidity;

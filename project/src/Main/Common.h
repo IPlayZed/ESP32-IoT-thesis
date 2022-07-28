@@ -3,8 +3,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <time.h>
 #include "SerialLogger.h"
+
 #define DEBUG_MODE
 
 #define uS_TO_S_FACTOR 1000000
