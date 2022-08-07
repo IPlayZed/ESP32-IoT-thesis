@@ -3,46 +3,50 @@
 
 namespace Hardware
 {
-    namespace MCP3561x
+    namespace Adc
     {
-        namespace Commands
+        namespace MCP3561x
         {
-            const uint8_t DEV_ADDR_LBITSHIFT = 6, REG_FST_CMD_ADDR_LBITSHIFT = 4;
-            const uint8_t DEV_ADDR_MAX = 0b11, REG_FST_CMD_ADDR_MAX = 0b1111, CMD_TYP_BIT_MAX = 0b11;
-
-            bool CheckIfCmdIsDontCare(uint8_t command)
+            namespace Commands
             {
-                bool foundAnIdc = false;
-                for (uint8_t idc : dontCares)
-                {
-                    if (command == idc) foundAnIdc = true;
-                }
-                LogInfo("The command constructed was a DON'T CARE command: " + String(command));
-                return foundAnIdc;
-            }
+                const uint8_t DEV_ADDR_LBITSHIFT = 6, REG_FST_CMD_ADDR_LBITSHIFT = 4;
+                const uint8_t DEV_ADDR_MAX = 0b11, REG_FST_CMD_ADDR_MAX = 0b1111, CMD_TYP_BIT_MAX = 0b11;
 
-            bool ConstructCommand(uint8_t deviceAddr, uint8_t registerOrFastCmdAddr, uint8_t commandTypeBits)
-            {
-                if (deviceAddr > DEV_ADDR_MAX)
+                bool CheckIfCmdIsDontCare(uint8_t command)
                 {
-                    LogError("The device address provided during command construction was invalid: " + String(deviceAddr));
-                    return false;
+                    bool foundAnIdc = false;
+                    for (uint8_t idc : dontCares)
+                    {
+                        if (command == idc) foundAnIdc = true;
+                    }
+                    LogInfo("The command constructed was a DON'T CARE command: " + String(command));
+                    return foundAnIdc;
                 }
-                else if (registerOrFastCmdAddr > REG_FST_CMD_ADDR_MAX)
+
+                bool ConstructCommand(uint8_t deviceAddr, uint8_t registerOrFastCmdAddr, uint8_t commandTypeBits)
                 {
-                    LogError("The register address or fast command provided was invalid: " + String(registerOrFastCmdAddr));
-                    return false;
+                    if (deviceAddr > DEV_ADDR_MAX)
+                    {
+                        LogError("The device address provided during command construction was invalid: " + String(deviceAddr));
+                        return false;
+                    }
+                    else if (registerOrFastCmdAddr > REG_FST_CMD_ADDR_MAX)
+                    {
+                        LogError("The register address or fast command provided was invalid: " + String(registerOrFastCmdAddr));
+                        return false;
+                    }
+                    else if (commandTypeBits > CMD_TYP_BIT_MAX)
+                    {
+                        LogError("The command type bits provided were invalid: " + String(commandTypeBits));
+                        return false;
+                    }
+                    
+                    uint8_t resultingCommand = 0; // empty bitfield for efficient bitwise operation
+                    resultingCommand |= ((deviceAddr << DEV_ADDR_LBITSHIFT) | (registerOrFastCmdAddr << REG_FST_CMD_ADDR_LBITSHIFT) | commandTypeBits);
+                    
+                    storage = resultingCommand;
+                    return CheckIfCmdIsDontCare(resultingCommand);
                 }
-                else if (commandTypeBits > CMD_TYP_BIT_MAX)
-                {
-                    LogError("The command type bits provided were invalid: " + String(commandTypeBits));
-                    return false;
-                }
-                
-                uint8_t resultingCommand = 0; // empty bitfield for efficient bitwise operation
-                resultingCommand |= ((deviceAddr << DEV_ADDR_LBITSHIFT) | (registerOrFastCmdAddr << REG_FST_CMD_ADDR_LBITSHIFT) | commandTypeBits);
-                
-                return CheckIfCmdIsDontCare(resultingCommand);
             }
         }
     }   
