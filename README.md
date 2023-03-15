@@ -18,6 +18,8 @@
 
 ## These links are useful resources I have used, grouped by topics:
 
-### Docker
+### Containerization
 
 - [Docker Compose Syntax: Volume or Bind Mount?](https://maximorlov.com/docker-compose-syntax-volume-or-bind-mount/)
+- [IoT Telemetry Simulator](https://github.com/azure-samples/iot-telemetry-simulator/tree/master/)
+- [VSCode Remote Development Docoumentation](https://code.visualstudio.com/api/advanced-topics/remote-extensions#architecture-and-extension-types)
