@@ -1,7 +1,0 @@
-version: '3.3'
-services:
-    oss:
-        environment:
-            - IotHubConnectionString=<your_connection_string>
-            - DeviceCount=<simulation_device_count>
-        image: mcr.microsoft.com/oss/azure-samples/azureiot-simulatordeviceprovisioning
