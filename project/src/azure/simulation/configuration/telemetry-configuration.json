@@ -1,0 +1,39 @@
+{
+	"IotHubConnectionString": "<put your secret string here>,
+	"MessageCount": 4,
+	"Variables": [
+		{
+			"name": "SimulatedTemperature",
+			"randomDouble": true,
+			"max": 23,
+			"min": 19
+		},
+		{
+			"name": "SimulatedHumidity",
+			"randomDouble": true,
+			"max":45,
+			"min":39
+		},
+		{
+			"name": "SimulatedCoLevel",
+			"sequence": true,
+			"values": [0.001, 0.002, 0.008, 0.009]			
+		}
+	],
+	"Intervals": {
+    		"sim000001": 1000,
+    		"sim000002": 500,
+    	},
+    	"Payloads": [
+    		{
+    			"type": "template",
+    			"deviceId": "sim000001",
+    			"template": "{\"deviceId\":\"$.DeviceId\",\"temperature\": \"$.SimulatedTemperature\",\"humidity\": \"$.SimulatedHumidity\",\"co_level\": \"$.SimulatedCoLevel\",\"device_time\": \"$.Time\"}"
+    		},
+    		{
+    			"type": "template",
+    			"deviceId": "sim000002",
+    			"template": "{\"deviceId\":\"$.DeviceId\",\"temperature\": \"$.SimulatedTemperature\",\"humidity\": \"$.SimulatedHumidity\",\"co_level\": \"$.SimulatedCoLevel\",\"device_time\": \"$.Time\"}"
+    		}
+    	]	
+}
