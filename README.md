@@ -15,3 +15,9 @@
 - [ ] Collect data and export it
 - [ ] Printable formal thesis
 - [ ] *(Optional)* Create a frontend for interactive data representation  
+
+## These links are useful resources I have used, grouped by topics:
+
+### Docker
+
+- [Docker Compose Syntax: Volume or Bind Mount?](https://maximorlov.com/docker-compose-syntax-volume-or-bind-mount/)
