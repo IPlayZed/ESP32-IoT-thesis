@@ -1,6 +1,0 @@
-services:
-  device-simulator-provisioning:
-    image: mcr.microsoft.com/oss/azure-samples/azureiot-simulatordeviceprovisioning
-    environment:
-      - IotHubConnectionString=<YOUR CONNECTION STRING>
-      - DeviceCount=<YOUR NUMBER OF DEVICES>
