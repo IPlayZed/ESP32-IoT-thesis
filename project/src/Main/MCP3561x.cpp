@@ -1,5 +1,5 @@
-#include "MCP3561x.h"
-#include "Common.h"
+#include "MCP3561x.hpp"
+#include "Common.hpp"
 
 namespace Hardware
 {

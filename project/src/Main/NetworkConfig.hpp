@@ -1,7 +1,7 @@
 #ifndef NETWORK_CONFIG_H
 #define NETWORK_CONFIG_H
 
-#include "Network.h"
+#include "Network.hpp"
 
 #define DEFAULT_MQTT_QOS MQTT_QOS_LEVEL_AT_LEAST_ONCE
 #define DEFAULT_SAS_TOKEN_DURATION_IN_MINUTES 60

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
-#include "AzIoTSasToken.h"
-#include "SerialLogger.h"
+#include "AzIoTSasToken.hpp"
+#include "SerialLogger.hpp"
 #include <az_result.h>
 #include <mbedtls/base64.h>
 #include <mbedtls/md.h>

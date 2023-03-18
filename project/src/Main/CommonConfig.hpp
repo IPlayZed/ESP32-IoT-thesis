@@ -1,7 +1,7 @@
 #ifndef COMMON_CONFIG_H
 #define COMMON_CONFIG_H
 
-#include "Network.h"
+#include "Network.hpp"
 
 #define DEFAULT_INBOUND_DATA_SIZE_BYTES 128
 #define DEFAULT_SERIAL_BAUD_RATE 9600

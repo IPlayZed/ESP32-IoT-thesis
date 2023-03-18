@@ -9,15 +9,15 @@
 #include <az_core.h>
 #include <az_iot.h>
 
-#include "CommonConfig.h"
-#include "Network.h"
-#include "NetworkConfig.h"
+#include "CommonConfig.hpp"
+#include "Network.hpp"
+#include "NetworkConfig.hpp"
 
-#include "AzIoTSasToken.h"
-#include "SecretsConfig.h"
+#include "AzIoTSasToken.hpp"
+#include "SecretsConfig.hpp"
 
-#include "SerialLogger.h"
-#include "NetworkConfig.h"
+#include "SerialLogger.hpp"
+#include "NetworkConfig.hpp"
 
 #define MAGIC_TIMESTAMP (uint32_t)1510592825
 
@@ -39,13 +39,13 @@ namespace Network
     static az_iot_hub_client client;
     static uint8_t sas_signature_buffer[256];
     static AzIoTSasToken sasToken(
-            &Network::client,
-            AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
-            AZ_SPAN_FROM_BUFFER(Network::sas_signature_buffer),
-            AZ_SPAN_FROM_BUFFER(Network::mqtt_password));
+        &Network::client,
+        AZ_SPAN_FROM_STR(CONFIG_AZURE_DEVICE_KEY),
+        AZ_SPAN_FROM_BUFFER(Network::sas_signature_buffer),
+        AZ_SPAN_FROM_BUFFER(Network::mqtt_password));
 
     static char serializedTelemetryData[CONFIG_TELEMETRY_DATA_MAXIMUM_SIZE];
-    
+
     namespace _WiFi
     {
         void _connect(void)
@@ -61,7 +61,7 @@ namespace Network
                 {
                     ESP.restart();
                 }
-                
+
                 delay(CONFIG_WIFI_WAIT_MSEC);
                 SerialPrint('.');
             }
@@ -120,19 +120,16 @@ namespace Network
             case MQTT_EVENT_CONNECTED:
                 LogInfo("MQTT event: MQTT_EVENT_CONNECTED");
                 subscribe_message_id = esp_mqtt_client_subscribe(Network::mqtt_client,
-                                                                AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC,
-                                                                CONFIG_MQTT_CLIENT_QOS);
+                                                                 AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC,
+                                                                 CONFIG_MQTT_CLIENT_QOS);
 
                 if (subscribe_message_id == -1)
                 {
-                    LogError("Could not subscribe to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) 
-                    + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
+                    LogError("Could not subscribe to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
                 }
                 else
                 {
-                    LogInfo("Subscribed to topic " 
-                    + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with message ID " 
-                    + String(subscribe_message_id) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
+                    LogInfo("Subscribed to topic " + String(AZ_IOT_HUB_CLIENT_C2D_SUBSCRIBE_TOPIC) + " with message ID " + String(subscribe_message_id) + " with QoS level of " + String(CONFIG_MQTT_CLIENT_QOS));
                 }
                 break;
 
@@ -169,20 +166,20 @@ namespace Network
         }
 
         // FIXME: Find out why does this cause "Core  1 panic'ed (StoreProhibited)"
-        void _configureMQTTConfiguration(esp_mqtt_client_config_t* mqtt_configuration)
+        void _configureMQTTConfiguration(esp_mqtt_client_config_t *mqtt_configuration)
         {
             memset(mqtt_configuration, 0, sizeof(mqtt_configuration));
-            mqtt_configuration -> uri = Network::mqtt_broker_uri;
-            mqtt_configuration -> port = Network::mqtt_port;
-            mqtt_configuration -> client_id = Network::mqtt_client_id;
-            mqtt_configuration -> username = Network::mqtt_username;
-            mqtt_configuration -> password = (const char *)az_span_ptr(Network::sasToken.Get());
-            mqtt_configuration -> keepalive = 30;
-            mqtt_configuration -> disable_clean_session = 0;
-            mqtt_configuration -> disable_auto_reconnect = false;
-            mqtt_configuration -> event_handle = MQTT::_MQTTEventHandler;
-            mqtt_configuration -> user_context = NULL;
-            mqtt_configuration -> cert_pem = (const char *)ca_pem;
+            mqtt_configuration->uri = Network::mqtt_broker_uri;
+            mqtt_configuration->port = Network::mqtt_port;
+            mqtt_configuration->client_id = Network::mqtt_client_id;
+            mqtt_configuration->username = Network::mqtt_username;
+            mqtt_configuration->password = (const char *)az_span_ptr(Network::sasToken.Get());
+            mqtt_configuration->keepalive = 30;
+            mqtt_configuration->disable_clean_session = 0;
+            mqtt_configuration->disable_auto_reconnect = false;
+            mqtt_configuration->event_handle = MQTT::_MQTTEventHandler;
+            mqtt_configuration->user_context = NULL;
+            mqtt_configuration->cert_pem = (const char *)ca_pem;
         }
 
         void _initializeMQTTClient(void)
@@ -194,7 +191,7 @@ namespace Network
             }
 
             esp_mqtt_client_config_t mqtt_configuration;
-            
+
             memset(&mqtt_configuration, 0, sizeof(mqtt_configuration));
             mqtt_configuration.uri = Network::mqtt_broker_uri;
             mqtt_configuration.port = Network::mqtt_port;
@@ -207,14 +204,15 @@ namespace Network
             mqtt_configuration.event_handle = MQTT::_MQTTEventHandler;
             mqtt_configuration.user_context = NULL;
             mqtt_configuration.cert_pem = (const char *)ca_pem;
-            
-            //configureMQTTConfiguration(&mqtt_configuration); // FIXME: Find out why does this cause "Core  1 panic'ed (StoreProhibited)"
+
+            // configureMQTTConfiguration(&mqtt_configuration); // FIXME: Find out why does this cause "Core  1 panic'ed (StoreProhibited)"
 
             mqtt_client = esp_mqtt_client_init(&mqtt_configuration);
-            
+
             if (mqtt_client == NULL)
             {
-                return LogError("Failed creating MQTT client.");;
+                return LogError("Failed creating MQTT client.");
+                ;
             }
 
             esp_err_t start_result = esp_mqtt_client_start(mqtt_client);
@@ -320,13 +318,13 @@ namespace Network
             }
 
             result = esp_mqtt_client_publish(
-                    Network::mqtt_client,
-                    Network::telemetry_topic,
-                    Network::serializedTelemetryData,
-                    strlen(Network::serializedTelemetryData),
-                    CONFIG_MQTT_CLIENT_QOS,
-                    CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
-            
+                Network::mqtt_client,
+                Network::telemetry_topic,
+                Network::serializedTelemetryData,
+                strlen(Network::serializedTelemetryData),
+                CONFIG_MQTT_CLIENT_QOS,
+                CONFIG_MQTT_CLIENT_MESSAGE_RETAIN_POLICY);
+
             if (result == 0)
             {
                 LogError("Publishing of payload failed! No telemetry was NOT sent  :( ");
@@ -334,13 +332,13 @@ namespace Network
             else
             {
                 LogInfo("Message published successfully!  :) ");
-            }  
+            }
         }
     }
 
     namespace Telemetry
     {
-        void processTelemetryData(Network::Telemetry::telemetryData_t* telemetryData)
+        void processTelemetryData(Network::Telemetry::telemetryData_t *telemetryData)
         {
             if (telemetryData == nullptr)
             {
@@ -363,7 +361,7 @@ namespace Network
                 LogInfo("WiFi was turned off, turning on as station again for telemetry.");
                 WiFi.mode(WIFI_STA);
             }
-            
+
             if (WiFi.status() != WL_CONNECTED)
             {
                 LogInfo("WiFi is not connected to an AP, trying to reconnect.");
@@ -396,6 +394,7 @@ namespace Network
         Network::_WiFi::_connect();
         Network::SNTP::_setup();
         Network::IoTHub::_initializeIoTHubClient();
-        if (turnOffWifiAfterSetup) Network::turnOffWiFi();
+        if (turnOffWifiAfterSetup)
+            Network::turnOffWiFi();
     }
 }

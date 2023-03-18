@@ -1,5 +1,5 @@
-#ifndef TASKS_H
-#define TASKS_H
+#ifndef TASKS_HPP
+#define TASKS_HPP
 
 namespace Tasks
 {

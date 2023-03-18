@@ -3,7 +3,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "SerialLogger.h"
+#include "SerialLogger.hpp"
 
 #define DEBUG_MODE
 
@@ -22,25 +22,25 @@
 #define NULL_TERMINATOR '\0'
 
 // WARNING: Only use this macro if the argument is an actual 1-dimensional C-like array.
-// Passing normal pointers will cause "sizeof(arg)" to return the system pointer width, resulting in a silent bug. 
+// Passing normal pointers will cause "sizeof(arg)" to return the system pointer width, resulting in a silent bug.
 #define sizeofarray(arg) (sizeof(arg) / sizeof(arg[0]))
 
 uint32_t getSecsSinceEpoch();
 
 #ifdef DEBUG_MODE
-    #define LogInfo(text) Logger.Info(text)
-    #define LogError(text) Logger.Error(text)
-    #define SerialPrint(text) Serial.print(text)
-    #define SerialPrintln() Serial.println()
-    #define SerialPrintlnTimeinfo(timeinfo, formattedText) Serial.println(timeinfo, formattedText)
-    #define DelayForSerialConnection(time) delay(time);
+#define LogInfo(text) Logger.Info(text)
+#define LogError(text) Logger.Error(text)
+#define SerialPrint(text) Serial.print(text)
+#define SerialPrintln() Serial.println()
+#define SerialPrintlnTimeinfo(timeinfo, formattedText) Serial.println(timeinfo, formattedText)
+#define DelayForSerialConnection(time) delay(time);
 #else
-    #define LogInfo(text)
-    #define LogError(text)
-    #define SerialPrint(text)
-    #define SerialPrintln()
-    #define SerialPrintlnTimeinfo(timeinfo, formattedText)
-    #define DelayForSerialConnection(time)
+#define LogInfo(text)
+#define LogError(text)
+#define SerialPrint(text)
+#define SerialPrintln()
+#define SerialPrintlnTimeinfo(timeinfo, formattedText)
+#define DelayForSerialConnection(time)
 #endif
 
 #endif

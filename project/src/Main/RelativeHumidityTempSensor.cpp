@@ -1,8 +1,8 @@
-#include "RelativeHumidityTempSensor.h"
-#include "DHTConfig.h"
-#include "DHT.h"
-#include "DHTConfig.h"
-#include "SerialLogger.h"
+#include "RelativeHumidityTempSensor.hpp"
+#include "DHTConfig.hpp"
+#include "DHT.hpp"
+#include "DHTConfig.hpp"
+#include "SerialLogger.hpp"
 
 #define CPU_FREQ_DHT_COMPLIANT 240
 
@@ -18,6 +18,7 @@ namespace RHTempSensor
     // Checks if the result is a number.
     // If it is one, then it stores it in storage and returns true.
     // If it is not, then it ignores it and returns false, leaving handling to caller.
+    // FIXME: Float should not be handled as a memory address if the CPU has appropriate register handling for this non-complex type.
     bool _handleResult(float *checkable, float *storage)
     {
         if (checkable == nullptr or storage == nullptr)
@@ -46,7 +47,6 @@ namespace RHTempSensor
             RHTempSensor::moving_avarage_actual_samples--;
             *storage = 0;
         }
-            
     }
 
     static void _handleLogging(float *value, uint8_t *i, bool isHumidity)
@@ -56,7 +56,7 @@ namespace RHTempSensor
             LogError("Could not handle logging as either the value or the index was null");
             return;
         }
-        
+
         if (!RHTempSensor::badResult)
         {
             if (!isHumidity)

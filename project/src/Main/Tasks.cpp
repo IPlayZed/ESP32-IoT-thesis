@@ -1,9 +1,10 @@
-#include "Tasks.h"
-#include "SerialLogger.h"
-#include "Common.h"
-#include "CommonConfig.h"
-#include "Network.h"
-#include "RelativeHumidityTempSensor.h"
+#include "Tasks.hpp"
+#include "SerialLogger.hpp"
+#include "Common.hpp"
+#include "CommonConfig.hpp"
+#include "Network.hpp"
+#include "RelativeHumidityTempSensor.hpp"
+#include "COSensor.hpp"
 
 namespace Tasks
 {
