@@ -2,7 +2,7 @@ services:
   device-simulator-provisioning:
     image: mcr.microsoft.com/oss/azure-samples/azureiot-simulatordeviceprovisioning
     environment:
-      - IotHubConnectionString=<put your secret string here> # This is a secret, so it should never be exposed! 
+      - IotHubConnectionString=${SECRET_STRING} # This comes from the .env file.
       - DeviceCount=2 # Change this to the desired number of simulated devices. Keep in mind, that the telemetry sending must be modified to match it.
   device-simulator-telemetry:
     image: mcr.microsoft.com/oss/azure-samples/azureiot-telemetrysimulator
