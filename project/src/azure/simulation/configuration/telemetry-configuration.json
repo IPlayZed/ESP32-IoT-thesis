@@ -1,5 +1,4 @@
 {
-	"IotHubConnectionString": "<put your secret string here>",
 	"MessageCount": 4,
 	"Variables": [
 		{
