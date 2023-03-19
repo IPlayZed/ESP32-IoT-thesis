@@ -3,7 +3,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "SerialLogger.hpp"
+#include "../SerialLogger/SerialLogger.hpp"
 
 #define DEBUG_MODE
 

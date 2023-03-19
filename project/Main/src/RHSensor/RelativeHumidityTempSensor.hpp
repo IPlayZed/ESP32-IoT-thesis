@@ -1,7 +1,7 @@
 #ifndef RELATIVE_HUMIDITY_TEMP_SENSOR_H
 #define RELATIVE_HUMIDITY_TEMP_SENSOR_H
 
-#include "Common.hpp"
+#include "../Common/Common.hpp"
 #include "RelativeHumidityTempSensorConfig.hpp"
 
 namespace RHTempSensor

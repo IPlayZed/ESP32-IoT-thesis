@@ -9,14 +9,14 @@
 #include <az_core.h>
 #include <az_iot.h>
 
-#include "CommonConfig.hpp"
+#include "../Common/CommonConfig.hpp"
 #include "Network.hpp"
 #include "NetworkConfig.hpp"
 
-#include "AzIoTSasToken.hpp"
-#include "SecretsConfig.hpp"
+#include "../Azure/AzIoTSasToken.hpp"
+#include "../Azure/SecretsConfig.hpp"
 
-#include "SerialLogger.hpp"
+#include "../SerialLogger/SerialLogger.hpp"
 #include "NetworkConfig.hpp"
 
 #define MAGIC_TIMESTAMP (uint32_t)1510592825
