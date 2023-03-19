@@ -4,14 +4,12 @@
 
 #include "COSensor.hpp"
 
-using namespace COSensor;
-
-bool initializeSensor()
+bool COSensor::initializeSensor()
 {
     Adc::initializeAdc();
 }
 
-double getCarbonMonoxidePartsPerMillion()
+double COSensor::getCarbonMonoxidePartsPerMillion()
 {
     uint32_t adcResult = Adc::readAdc();
     // TODO: Maybe extract this into a general ADC source file.

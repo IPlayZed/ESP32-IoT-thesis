@@ -13,7 +13,7 @@ namespace COSensor
      *    @brief  Gets the carbon monoxide level.
      *    @return the PPM of CO in the air
      */
-    uint32_t getCarbonMonoxidePartsPerMillion();
+    double getCarbonMonoxidePartsPerMillion();
 }
 
 #endif // CO_SENSOR_HPP

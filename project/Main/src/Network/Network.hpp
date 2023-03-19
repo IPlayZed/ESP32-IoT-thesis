@@ -20,7 +20,7 @@ namespace Network
         {
             float temperature;
             float humidity;
-            float CO;
+            double CO;
         } telemetryData_t;
 
         void processTelemetryData(Network::Telemetry::telemetryData_t *telemetryData);

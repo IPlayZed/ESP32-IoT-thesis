@@ -26,6 +26,7 @@ namespace Tasks
                 sensorData.temperature = RHTempSensor::getTemperature();
                 sensorData.humidity = RHTempSensor::getHumidity();
                 sensorData.CO = COSensor::getCarbonMonoxidePartsPerMillion();
+                // sensorData.CO = 2.0;
                 Network::Telemetry::processTelemetryData(&sensorData);
                 Network::Telemetry::sendTelemetry();
         }

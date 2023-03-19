@@ -2,16 +2,14 @@
 
 #include "Adc.hpp"
 
-using namespace Adc;
-
 Adafruit_MCP3008 adc;
 
-bool initializeAdc(uint8_t chipSelectPin)
+bool Adc::initializeAdc(uint8_t chipSelectPin)
 {
     adc.begin(chipSelectPin);
 }
 
-uint32_t readAdc(uint8_t channel)
+uint32_t Adc::readAdc(uint8_t channel)
 {
     return adc.readADC(channel);
 }
