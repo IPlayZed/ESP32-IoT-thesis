@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "IotHubs_co_sensors_connectionString": {
+            "value": null
+        },
+        "IotHubs_co_sensors_containerName": {
+            "value": null
+        },
+        "IotHubs_co_sensors_name": {
+            "value": null
+        },
+        "serverfarms_ASP_thesis_966c_name": {
+            "value": null
+        },
+        "sites_co_sensors_function_app_name": {
+            "value": null
+        },
+        "components_co_sensors_function_app_name": {
+            "value": null
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "value": null
+        },
+        "streamingjobs_co_sensors_stream_analytics_job_name": {
+            "value": null
+        },
+        "smartdetectoralertrules_failure_anomalies___co_sensors_function_app_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_31dde498_6719_4ea3_9739_83fb8f4fbf2b_NEU_externalid": {
+            "value": null
+        }
+    }
+}
