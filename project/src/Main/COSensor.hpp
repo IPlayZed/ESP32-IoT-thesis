@@ -4,7 +4,7 @@
 namespace COSensor
 {
     bool initializeSensor();
-    int16_t getCarbonMonoxidePartsPerMillion();
+    uint32_t getCarbonMonoxidePartsPerMillion();
 }
 
 #endif // CO_SENSOR_HPP

@@ -6,7 +6,7 @@ namespace Configurations
     namespace Adc
     {
 
-        enum class AdcChannel : uint8_t
+        enum AdcChannel : uint8_t
         {
             ch1 = 0,
             ch2 = 1,
@@ -21,12 +21,14 @@ namespace Configurations
 
         namespace Defaults
         {
-            constexpr uint8_t DEFAULT_ADC_COMMAND_BIT_WIDTH = 0x8;
+            constexpr uint8_t DEFAULT_ADC_COMMAND_BIT_WIDTH = 8;
             constexpr uint8_t DEFAULT_ADC_CHANNEL = AdcChannel::ch1; // TODO: Verify this.
+            constexpr uint8_t DEFAULT_SPI_CHIP_SELECT_PIN = 5;
         }
 
         const uint8_t CONFIG_ADC_COMMAND_BIT_WIDTH = Defaults::DEFAULT_ADC_COMMAND_BIT_WIDTH;
         const uint8_t CONFIG_ADC_CHANNEL = Defaults::DEFAULT_ADC_CHANNEL;
+        const uint8_t CONFIG_SPI_CHIP_SELECT_PIN = 5;
     }
 }
 

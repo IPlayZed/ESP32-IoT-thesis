@@ -1,8 +1,11 @@
+#include <DHT_U.h>
+#include <DHT.h>
+
+#include "SerialLogger.hpp"
+
 #include "RelativeHumidityTempSensor.hpp"
 #include "DHTConfig.hpp"
-#include "DHT.hpp"
-#include "DHTConfig.hpp"
-#include "SerialLogger.hpp"
+
 
 #define CPU_FREQ_DHT_COMPLIANT 240
 
