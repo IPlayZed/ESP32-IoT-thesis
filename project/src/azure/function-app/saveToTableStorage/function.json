@@ -1,0 +1,21 @@
+{
+  "bindings": [
+    {
+      "name": "telemetryMessages",
+      "connection": "co-sensors-iot-hub_events_IOTHUB2",
+      "eventHubName": "iothub-ehub-co-sensors-24876578-a0bfe7764a",
+      "consumerGroup": "savetotablestorage",
+      "cardinality": "many",
+      "dataType": "string",
+      "direction": "in",
+      "type": "eventHubTrigger"
+    },
+    {
+      "name": "telemetryTableStorage",
+      "tableName": "TELEMETRY",
+      "connection": "AzureWebJobsStorage",
+      "direction": "out",
+      "type": "table"
+    }
+  ]
+}
