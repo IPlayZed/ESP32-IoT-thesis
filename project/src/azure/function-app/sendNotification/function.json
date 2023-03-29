@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "name": "telemetryMessages",
+      "connection": "co-sensors-iot-hub_events_IOTHUB",
+      "eventHubName": "iothub-ehub-co-sensors-24876578-a0bfe7764a",
+      "consumerGroup": "sendnotification",
+      "cardinality": "many",
+      "dataType": "string",
+      "direction": "in",
+      "type": "eventHubTrigger"
+    }
+  ]
+}
