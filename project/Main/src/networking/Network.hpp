@@ -30,4 +30,4 @@ namespace Network
     void setupNetworking(bool turnOffWifiAfterSetup = WIFI_KEEP_ON);
 }
 
-#endif
+#endif // NETWORK_H

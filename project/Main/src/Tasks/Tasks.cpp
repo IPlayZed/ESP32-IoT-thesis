@@ -8,10 +8,10 @@
 
 namespace Tasks
 {
-        void taskConfigureLocalPeripherials(void *RTOSparameter)
+        void configureLocalPeripherials(void *RTOSparameter)
         {
 #ifdef DEBUG_MODE
-                Helpers::taskHelperDelayForSerialConnection();
+                Helpers::delayForSerialConnection();
                 Serial.begin(CONFIG_SERIAL_BAUD_RATE);
 #endif
                 LogInfo("Started task \"taskConfigureLocalPeripherials\"");
@@ -25,39 +25,39 @@ namespace Tasks
                 LogInfo("Completed peripherial initialization!");
                 LogInfo("Completed task \"taskConfigureLocalPeripherials\"");
         }
-        void taskInitializeConnection(void *RTOSparameter)
+        void initializeConnection(void *RTOSparameter)
         {
                 LogInfo("Started task \"taskInitializeConnection\"");
                 btStop();
                 Network::setupNetworking();
                 LogInfo("Completed task \"taskInitializeConnection\"");
         }
-        void taskSendTelemetry(void *RTOSparameter)
+        void sendTelemetry(void *RTOSparameter)
         {
                 LogInfo("Started task \"taskSendTelemetry\"");
                 Network::Telemetry::telemetryData_t sensorData;
                 sensorData.temperature = RHTempSensor::getTemperature();
                 sensorData.humidity = RHTempSensor::getHumidity();
-                // sensorData.CO = 2.0;
                 sensorData.CO = COSensor::getCarbonMonoxidePartsPerMillion();
                 Network::Telemetry::processTelemetryData(&sensorData);
                 Network::Telemetry::sendTelemetry();
                 LogInfo("Completed task \"taskSendTelemetry\"");
         }
-        void taskDoMeasurements(void *RTOSparameter)
+        void doMeasurements(void *RTOSparameter)
         {
                 LogInfo("Started task \"taskDoMeasurements\"");
                 RHTempSensor::makeMeasurements();
+                COSensor::makeMeasurement();
                 LogInfo("Completed task \"taskDoMeasurements\"");
         }
 
         namespace Helpers
         {
-                void taskHelperDelayForSerialConnection(void)
+                void delayForSerialConnection(void)
                 {
                         DelayForSerialConnection(CONFIG_DELAY_FOR_SERIAL_CONNECTION);
                 }
-                void taskHelperStartSleep()
+                void startSleep()
                 {
                         LogInfo("Going to sleep! Zzzzz...");
                         esp_light_sleep_start();

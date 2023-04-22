@@ -1,18 +1,42 @@
 #ifndef TASKS_HPP
 #define TASKS_HPP
 
+/*!
+ *    @brief  Contains the tasks to be executed by firmware.
+ */
 namespace Tasks
 {
-    void taskConfigureLocalPeripherials(void* RTOSparameter = nullptr);
-    void taskInitializeConnection(void* RTOSparameter = nullptr);
-    void taskSendTelemetry(void* RTOSparameter = nullptr);
-    void taskDoMeasurements(void* RTOSparameter = nullptr);
+    /*!
+     *    @brief  Configure all local peripherials.
+     */
+    void configureLocalPeripherials(void *RTOSparameter = nullptr);
+    /*!
+     *    @brief  Initialize connection to remote.
+     */
+    void initializeConnection(void *RTOSparameter = nullptr);
+    /*!
+     *    @brief  Send the collected telemetry.
+     */
+    void sendTelemetry(void *RTOSparameter = nullptr);
+    /*!
+     *    @brief  Make local measurements.
+     */
+    void doMeasurements(void *RTOSparameter = nullptr);
 
+    /*!
+     *    @brief  Contains the tasks to be executed by firmware.
+     */
     namespace Helpers
     {
-        void taskHelperDelayForSerialConnection(void);
-        void taskHelperStartSleep();
+        /*!
+         *    @brief  Delay UART serial. Useful for debugging.
+         */
+        void delayForSerialConnection(void);
+        /*!
+         *    @brief  Change into sleep mode.
+         */
+        void startSleep();
     }
 }
 
-#endif
+#endif // TASKS_HPP

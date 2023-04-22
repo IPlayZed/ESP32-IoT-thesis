@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "../../common/serial-logger/SerialLogger.hpp"
+
 #include "AzIoTSasToken.hpp"
-#include "../SerialLogger/SerialLogger.hpp"
 
 #define INDEFINITE_TIME ((time_t)-1)
 

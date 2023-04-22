@@ -13,10 +13,11 @@
 #include "Network.hpp"
 #include "NetworkConfig.hpp"
 
-#include "../Azure/AzIoTSasToken.hpp"
-#include "../Azure/SecretsConfig.hpp"
+#include "azure/AzIoTSasToken.hpp"
+#include "azure/SecretsConfig.hpp"
 
-#include "../SerialLogger/SerialLogger.hpp"
+#include "../common/serial-logger/SerialLogger.hpp"
+
 #include "NetworkConfig.hpp"
 
 #define MAGIC_TIMESTAMP (uint32_t)1510592825

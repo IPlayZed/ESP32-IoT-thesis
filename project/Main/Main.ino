@@ -4,13 +4,13 @@
 
 void setup()
 {
-        Tasks::taskConfigureLocalPeripherials();
-        Tasks::taskInitializeConnection();
+        Tasks::configureLocalPeripherials();
+        Tasks::initializeConnection();
 }
 
 void loop()
 {
-        Tasks::taskDoMeasurements();
-        Tasks::taskSendTelemetry();
-        Tasks::Helpers::taskHelperStartSleep();
+        Tasks::doMeasurements();
+        Tasks::sendTelemetry();
+        Tasks::Helpers::startSleep();
 }

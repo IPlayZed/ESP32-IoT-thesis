@@ -12,11 +12,11 @@ bool Adc::initializeAdc(uint8_t chipSelectPin)
     bool chip_init_success = adc.begin(chipSelectPin);
     if (true == chip_init_success)
     {
-        LogInfo("ADC initialization successful!");
+        LogInfo("Hardware SPI communication with ADC successful on CS pin " + String(chipSelectPin));
     }
     else
     {
-        LogError("ADC initialization failed!");
+        LogError("Hardware SPI communication with ADC failed on CS pin " + String(chipSelectPin));
     }
     return chip_init_success;
 #endif
@@ -28,11 +28,15 @@ bool Adc::initializeAdc(uint8_t chipSelectPin)
 uint32_t Adc::readAdc(uint8_t channel)
 {
 #ifdef DEBUG_MODE
-    LogInfo("Trying to read the ADC...");
+    LogInfo("Trying to read the ADC from channel " + String(channel));
     uint32_t value_read = adc.readADC(channel);
     if (-1 == value_read)
     {
-        LogError("ADC channel" + String(channel) + "is incorrect!");
+        LogError("ADC channel " + String(channel) + " is incorrect!");
+    }
+    else if (0 == value_read)
+    {
+        LogWarning("Reading from ADC channel " + String(channel) + " resulted in 0. This might be correct, but it can also indicate incorrect functioning!")
     }
     else
     {

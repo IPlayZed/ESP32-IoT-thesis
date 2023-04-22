@@ -1,5 +1,5 @@
-#ifndef RELATIVE_HUMIDITY_TEMP_SENSOR_H
-#define RELATIVE_HUMIDITY_TEMP_SENSOR_H
+#ifndef RELATIVE_HUMIDITY_TEMP_SENSOR_HPP
+#define RELATIVE_HUMIDITY_TEMP_SENSOR_HPP
 
 #include "../Common/Common.hpp"
 #include "RelativeHumidityTempSensorConfig.hpp"
@@ -18,4 +18,4 @@ namespace RHTempSensor
     float getTemperature();
 }
 
-#endif
+#endif // RELATIVE_HUMIDITY_TEMP_SENSOR_HPP

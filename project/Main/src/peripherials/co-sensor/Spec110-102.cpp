@@ -5,6 +5,8 @@
 
 #include "COSensor.hpp"
 
+double ppm = 0.0;
+
 bool COSensor::initializeSensor()
 {
     LogInfo("CO sensor triggered ADC initialization.");
@@ -20,13 +22,18 @@ bool COSensor::initializeSensor()
     return chip_init_success;
 }
 
-double COSensor::getCarbonMonoxidePartsPerMillion()
+void COSensor::makeMeasurement()
 {
     LogInfo("Trying to measure CO level.");
-    uint32_t adcResult = Adc::readAdc();
-    double adcCurrent = (adcResult * Configurations::Adc::CONFIG_REFERENCE_VOLTAGE) / Configurations::Adc::CONFIG_PRECISION_BITS;
+    uint32_t adcResult = Adc::readAdc();    
+    double adcCurrent = (adcResult * Configurations::Adc::REFERENCE_VOLTAGE) / Configurations::Adc::PRECISION_BITS;
     LogInfo("ADC current is: " + String(adcCurrent) + "A");
-    double ppm = (adcCurrent * 1000000000.0) / 2.0;
-    LogInfo("CO level is: " + String(ppm) + "PPM");
-    return ppm; // Scale to nA. 1 PPM is per 2 nA.
+    double _ppm = (adcCurrent * 1000000000.0) / 2.0; // Calculated by scaling to nA and 1 PPM is per 2 nA.
+    LogInfo("CO level is: " + String(_ppm) + "PPM");
+    ppm = _ppm;
+}
+
+double COSensor::getPPMLevel()
+{
+    return ppm;
 }

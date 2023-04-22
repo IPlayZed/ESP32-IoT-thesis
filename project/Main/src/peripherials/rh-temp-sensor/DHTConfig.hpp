@@ -9,4 +9,4 @@
     #define DHT_SAMPLING_PERIOD (uint32_t)2000
 #endif
 
-#endif
+#endif // DHT_CONFIG_H

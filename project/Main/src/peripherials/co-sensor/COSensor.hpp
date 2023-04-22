@@ -10,10 +10,15 @@ namespace COSensor
     bool initializeSensor();
 
     /*!
-     *    @brief  Gets the carbon monoxide level.
-     *    @return the PPM of CO in the air
+     *    @brief  Makes a measurement.
      */
-    double getCarbonMonoxidePartsPerMillion();
+    void makeMeasurement();
+
+    /*!
+     *    @brief  Gets the carbon monoxide level.
+     *    @return the parts-per-million (PPM) of CO in the air
+     */
+    double getPPMLevel();
 }
 
 #endif // CO_SENSOR_HPP

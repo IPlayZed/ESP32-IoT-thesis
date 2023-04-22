@@ -1,15 +1,13 @@
 #include <DHT_U.h>
 #include <DHT.h>
 
-#include "../SerialLogger/SerialLogger.hpp"
+#include "../common/serial-logger/SerialLogger.hpp"
 
 #include "RelativeHumidityTempSensor.hpp"
 #include "DHTConfig.hpp"
 
 #define CPU_FREQ_DHT_COMPLIANT 240
 
-// TODO: Implement moving avarage (so that failed measurements do not mess up the value). <- do the tho?
-// TODO: Decouple from DHT sensor libs.
 namespace RHTempSensor
 {
     static DHT dht_sensor(CONFIG_PIN, CONFIG_DHT_TYPE);

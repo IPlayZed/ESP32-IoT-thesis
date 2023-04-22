@@ -1,9 +1,9 @@
 // Licensed under: GNU GENERAL PUBLIC LICENSE Version 2
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef COMMON_HPP
+#define COMMON_HPP
 
-#include "../SerialLogger/SerialLogger.hpp"
+#include "serial-logger/SerialLogger.hpp"
 
 #define DEBUG_MODE
 
@@ -29,18 +29,20 @@ uint32_t getSecsSinceEpoch();
 
 #ifdef DEBUG_MODE
 #define LogInfo(text) Logger.Info(text)
+#define LogWarning(text) Logger.Warning(text)
 #define LogError(text) Logger.Error(text)
 #define SerialPrint(text) Serial.print(text)
-#define SerialPrintln() Serial.println()
-#define SerialPrintlnTimeinfo(timeinfo, formattedText) Serial.println(timeinfo, formattedText)
+#define SerialNewLine() Serial.println()
+#define SerialTimeinfo(timeinfo, formattedText) Serial.println(timeinfo, formattedText)
 #define DelayForSerialConnection(time) delay(time);
 #else
 #define LogInfo(text)
+#define LogWarning(text)
 #define LogError(text)
 #define SerialPrint(text)
-#define SerialPrintln()
-#define SerialPrintlnTimeinfo(timeinfo, formattedText)
+#define SerialNewLine()
+#define SerialTimeinfo(timeinfo, formattedText)
 #define DelayForSerialConnection(time)
 #endif
 
-#endif
+#endif // COMMON_HPP
