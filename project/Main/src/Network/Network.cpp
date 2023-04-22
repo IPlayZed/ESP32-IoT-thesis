@@ -346,6 +346,7 @@ namespace Network
             }
 
             StaticJsonDocument<CONFIG_TELEMETRY_DATA_MAXIMUM_SIZE> telemetry_message;
+            telemetry_message["deviceId"] = "phys1";
             telemetry_message[CONFIG_TELEMETRY_DATA_TEMPERATURE_ID] = telemetryData->temperature;
             telemetry_message[CONFIG_TELEMETRY_DATA_HUMIDITY_ID] = telemetryData->humidity;
             telemetry_message[CONFIG_TELEMETRY_DATA_CO_ID] = telemetryData->CO;
@@ -361,7 +362,6 @@ namespace Network
                 LogInfo("WiFi was turned off, turning on as station again for telemetry.");
                 WiFi.mode(WIFI_STA);
             }
-
             if (WiFi.status() != WL_CONNECTED)
             {
                 LogInfo("WiFi is not connected to an AP, trying to reconnect.");

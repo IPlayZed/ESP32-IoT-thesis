@@ -12,14 +12,14 @@ namespace Configurations
          */
         enum AdcChannel : uint8_t
         {
-            ch1 = 0,
-            ch2 = 1,
-            ch3 = 2,
-            ch4 = 3,
-            ch5 = 4,
-            ch6 = 5,
-            ch7 = 6,
-            ch8 = 7
+            ch1 = 1,
+            ch2 = 2,
+            ch3 = 3,
+            ch4 = 4,
+            ch5 = 5,
+            ch6 = 6,
+            ch7 = 7,
+            ch8 = 8
 
         };
 

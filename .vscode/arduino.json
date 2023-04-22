@@ -3,5 +3,5 @@
     "board": "esp32:esp32:esp32",
     "sketch": "project/Main/Main.ino",
     "output": "build",
-    "port": "/dev/ttyUSB0"
+    "port": "COM3"
 }

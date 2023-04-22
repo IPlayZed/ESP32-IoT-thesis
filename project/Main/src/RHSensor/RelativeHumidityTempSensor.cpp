@@ -6,10 +6,9 @@
 #include "RelativeHumidityTempSensor.hpp"
 #include "DHTConfig.hpp"
 
-
 #define CPU_FREQ_DHT_COMPLIANT 240
 
-// TODO: Implement moving avarage (so that failed measurements do not mess up the value).
+// TODO: Implement moving avarage (so that failed measurements do not mess up the value). <- do the tho?
 // TODO: Decouple from DHT sensor libs.
 namespace RHTempSensor
 {
@@ -18,9 +17,10 @@ namespace RHTempSensor
     static bool badResult = false;
     static uint8_t moving_avarage_actual_samples = CONFIG_MEASUREMENT_TIMES;
 
-    // Checks if the result is a number.
-    // If it is one, then it stores it in storage and returns true.
-    // If it is not, then it ignores it and returns false, leaving handling to caller.
+    /*!
+     *    @brief  Checks if the result is a number. If it is one, then it stores it in storage and returns true. If it is not, then it ignores it and returns false, leaving handling to caller.
+     *    @return true if measurement result could be handled, false if not
+     */
     // FIXME: Float should not be handled as a memory address if the CPU has appropriate register handling for this non-complex type.
     bool _handleResult(float *checkable, float *storage)
     {
@@ -42,6 +42,7 @@ namespace RHTempSensor
         }
     }
 
+    // FIXME: Float should not be handled as a memory address if the CPU has appropriate register handling for this non-complex type.
     void _readFromSensor(float *storage, float result)
     {
         bool is_ok = RHTempSensor::_handleResult(&result, storage);
@@ -80,12 +81,15 @@ namespace RHTempSensor
 
     void initializeSensor(void)
     {
+#ifdef DEBUG_MODE
+        LogInfo("Trying to initialize DHT sensor, but due to library limitations WILL NOT have proper feedback if it was successful!");
+#endif
         dht_sensor.begin();
     }
 
+    // FIXME: Find out why DHT11 only works when CPU freq is at 240 MHz. Maybe it should be reinitialized here?
     void makeMeasurements(void)
     {
-        // TODO: Find out why DHT11 only works when CPU freq is at 240 MHz.
         setCpuFrequencyMhz(CPU_FREQ_DHT_COMPLIANT);
         for (uint8_t i = 0; i < CONFIG_MEASUREMENT_TIMES; i++)
         {
