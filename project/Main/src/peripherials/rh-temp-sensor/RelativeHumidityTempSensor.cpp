@@ -1,7 +1,7 @@
 #include <DHT_U.h>
 #include <DHT.h>
 
-#include "../common/serial-logger/SerialLogger.hpp"
+#include "../../common/serial-logger/SerialLogger.hpp"
 
 #include "RelativeHumidityTempSensor.hpp"
 #include "DHTConfig.hpp"

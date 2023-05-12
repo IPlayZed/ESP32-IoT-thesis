@@ -1,6 +1,6 @@
 #include <Adafruit_MCP3008.h>
 
-#include "../Common/Common.hpp"
+#include "../../common/Common.hpp"
 #include "Adc.hpp"
 
 Adafruit_MCP3008 adc;
@@ -36,7 +36,7 @@ uint32_t Adc::readAdc(uint8_t channel)
     }
     else if (0 == value_read)
     {
-        LogWarning("Reading from ADC channel " + String(channel) + " resulted in 0. This might be correct, but it can also indicate incorrect functioning!")
+        LogWarning("Reading from ADC channel " + String(channel) + " resulted in 0. This might be correct, but it can also indicate incorrect functioning!");
     }
     else
     {

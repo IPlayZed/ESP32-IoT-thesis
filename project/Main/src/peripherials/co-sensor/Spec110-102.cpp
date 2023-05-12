@@ -1,7 +1,7 @@
 #include <Adafruit_MCP3008.h>
 
-#include "../Common/Common.hpp"
-#include "../ADC/Adc.hpp"
+#include "../../common/Common.hpp"
+#include "../adc/Adc.hpp"
 
 #include "COSensor.hpp"
 

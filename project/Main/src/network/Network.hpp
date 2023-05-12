@@ -3,7 +3,7 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include "../Common/Common.hpp"
+#include "../common/Common.hpp"
 
 #define MQTT_QOS_LEVEL_AT_MOST_ONCE 0
 #define MQTT_QOS_LEVEL_AT_LEAST_ONCE 1

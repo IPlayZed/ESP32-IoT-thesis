@@ -1,10 +1,10 @@
 #include "Tasks.hpp"
-#include "../SerialLogger/SerialLogger.hpp"
-#include "../Common/Common.hpp"
-#include "../Common/CommonConfig.hpp"
-#include "../Network/Network.hpp"
-#include "../RHSensor/RelativeHumidityTempSensor.hpp"
-#include "../COSensor/COSensor.hpp"
+#include "../common/serial-logger/SerialLogger.hpp"
+#include "../common/Common.hpp"
+#include "../common/CommonConfig.hpp"
+#include "../network/Network.hpp"
+#include "../peripherials/rh-temp-sensor/RelativeHumidityTempSensor.hpp"
+#include "../peripherials/co-sensor/COSensor.hpp"
 
 namespace Tasks
 {
@@ -38,7 +38,7 @@ namespace Tasks
                 Network::Telemetry::telemetryData_t sensorData;
                 sensorData.temperature = RHTempSensor::getTemperature();
                 sensorData.humidity = RHTempSensor::getHumidity();
-                sensorData.CO = COSensor::getCarbonMonoxidePartsPerMillion();
+                sensorData.CO = COSensor::getPPMLevel();
                 Network::Telemetry::processTelemetryData(&sensorData);
                 Network::Telemetry::sendTelemetry();
                 LogInfo("Completed task \"taskSendTelemetry\"");

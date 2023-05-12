@@ -9,7 +9,7 @@
 #include <az_core.h>
 #include <az_iot.h>
 
-#include "../Common/CommonConfig.hpp"
+#include "../common/CommonConfig.hpp"
 #include "Network.hpp"
 #include "NetworkConfig.hpp"
 
@@ -67,7 +67,7 @@ namespace Network
                 SerialPrint('.');
             }
 
-            SerialPrintln();
+            SerialNewLine();
             LogInfo("Connected to " + String(CONFIG_WIFI_SSID) + " with IP of " + WiFi.localIP().toString());
         }
     }
@@ -93,7 +93,7 @@ namespace Network
             }
 
             struct tm timeinfo;
-            SerialPrintln();
+            SerialNewLine();
 
             if (!getLocalTime(&timeinfo))
             {
@@ -102,7 +102,7 @@ namespace Network
             else
             {
                 LogInfo("Got local time: ");
-                SerialPrintlnTimeinfo(&timeinfo, TIMEINFO_FORMAT_STRING);
+                SerialTimeinfo(&timeinfo, TIMEINFO_FORMAT_STRING);
             }
         }
     }
