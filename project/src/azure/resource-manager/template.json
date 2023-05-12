@@ -2,26 +2,34 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "IotHubs_co_sensors_connectionString": {
+        "IotHubs_co_sensors_iot_hub_connectionString": {
             "type": "SecureString"
         },
-        "IotHubs_co_sensors_containerName": {
+        "IotHubs_co_sensors_iot_hub_containerName": {
             "type": "SecureString"
-        },
-        "IotHubs_co_sensors_name": {
-            "defaultValue": "co-sensors",
-            "type": "String"
-        },
-        "serverfarms_ASP_thesis_966c_name": {
-            "defaultValue": "ASP-thesis-966c",
-            "type": "String"
         },
         "sites_co_sensors_function_app_name": {
             "defaultValue": "co-sensors-function-app",
             "type": "String"
         },
-        "components_co_sensors_function_app_name": {
-            "defaultValue": "co-sensors-function-app",
+        "IotHubs_co_sensors_iot_hub_name": {
+            "defaultValue": "co-sensors-iot-hub",
+            "type": "String"
+        },
+        "serverfarms_ASP_cosensors_9816_name": {
+            "defaultValue": "ASP-cosensors-9816",
+            "type": "String"
+        },
+        "templateSpecs_co_sensors_iot_hub_name": {
+            "defaultValue": "co-sensors-iot-hub",
+            "type": "String"
+        },
+        "storageAccounts_cosensorsstorageaccount_name": {
+            "defaultValue": "cosensorsstorageaccount",
+            "type": "String"
+        },
+        "components_co_sensors_function_app_insights_name": {
+            "defaultValue": "co-sensors-function-app-insights",
             "type": "String"
         },
         "actionGroups_Application_Insights_Smart_Detection_name": {
@@ -32,8 +40,8 @@
             "defaultValue": "co-sensors-stream-analytics-job",
             "type": "String"
         },
-        "smartdetectoralertrules_failure_anomalies___co_sensors_function_app_name": {
-            "defaultValue": "failure anomalies - co-sensors-function-app",
+        "smartdetectoralertrules_failure_anomalies___co_sensors_function_app_insights_name": {
+            "defaultValue": "failure anomalies - co-sensors-function-app-insights",
             "type": "String"
         },
         "workspaces_DefaultWorkspace_31dde498_6719_4ea3_9739_83fb8f4fbf2b_NEU_externalid": {
@@ -46,8 +54,11 @@
         {
             "type": "Microsoft.Devices/IotHubs",
             "apiVersion": "2022-04-30-preview",
-            "name": "[parameters('IotHubs_co_sensors_name')]",
+            "name": "[parameters('IotHubs_co_sensors_iot_hub_name')]",
             "location": "northeurope",
+            "tags": {
+                "created-for": "thesis"
+            },
             "sku": {
                 "name": "F1",
                 "tier": "Free",
@@ -86,8 +97,8 @@
                 "storageEndpoints": {
                     "$default": {
                         "sasTtlAsIso8601": "PT1H",
-                        "connectionString": "[parameters('IotHubs_co_sensors_connectionString')]",
-                        "containerName": "[parameters('IotHubs_co_sensors_containerName')]"
+                        "connectionString": "[parameters('IotHubs_co_sensors_iot_hub_connectionString')]",
+                        "containerName": "[parameters('IotHubs_co_sensors_iot_hub_containerName')]"
                     }
                 },
                 "messagingEndpoints": {
@@ -107,7 +118,7 @@
                         "maxDeliveryCount": 10
                     }
                 },
-                "features": "GWV2",
+                "features": "None",
                 "deviceStreams": {
                     "streamingEndpoints": [
                         "https://db-001.northeurope-001.streams.azure-devices.net"
@@ -115,13 +126,12 @@
                 },
                 "disableLocalAuth": false,
                 "allowedFqdnList": [],
-                "enableDataResidency": false,
-                "rootCertificate": {}
+                "enableDataResidency": false
             }
         },
         {
             "type": "microsoft.insights/actionGroups",
-            "apiVersion": "2022-06-01",
+            "apiVersion": "2023-01-01",
             "name": "[parameters('actionGroups_Application_Insights_Smart_Detection_name')]",
             "location": "Global",
             "properties": {
@@ -154,8 +164,11 @@
         {
             "type": "microsoft.insights/components",
             "apiVersion": "2020-02-02",
-            "name": "[parameters('components_co_sensors_function_app_name')]",
+            "name": "[parameters('components_co_sensors_function_app_insights_name')]",
             "location": "northeurope",
+            "tags": {
+                "created-for": "co-sensors-function-app"
+            },
             "kind": "web",
             "properties": {
                 "Application_Type": "web",
@@ -169,20 +182,85 @@
             }
         },
         {
+            "type": "Microsoft.Resources/templateSpecs",
+            "apiVersion": "2022-02-01",
+            "name": "[parameters('templateSpecs_co_sensors_iot_hub_name')]",
+            "location": "northeurope",
+            "tags": {
+                "created-for": "thesis"
+            },
+            "properties": {
+                "description": "This resource was used to create the IoT Hub for my thesis."
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-09-01",
+            "name": "[parameters('storageAccounts_cosensorsstorageaccount_name')]",
+            "location": "northeurope",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "dnsEndpointType": "Standard",
+                "defaultToOAuthAuthentication": false,
+                "publicNetworkAccess": "Enabled",
+                "allowCrossTenantReplication": true,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": true,
+                "allowSharedKeyAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "requireInfrastructureEncryption": false,
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "table": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "queue": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
             "type": "Microsoft.StreamAnalytics/streamingjobs",
             "apiVersion": "2021-10-01-preview",
             "name": "[parameters('streamingjobs_co_sensors_stream_analytics_job_name')]",
             "location": "North Europe",
+            "tags": {
+                "created-for": "co-sensors-iot-hub"
+            },
             "sku": {
                 "name": "Standard",
-                "capacity": 3
+                "capacity": 1
             },
             "properties": {
                 "sku": {
                     "name": "Standard"
                 },
                 "outputStartMode": "JobStartTime",
-                "outputStartTime": "2022-07-18T19:59:39.047Z",
+                "outputStartTime": "2023-03-26T15:11:32.997Z",
                 "eventsOutOfOrderPolicy": "Adjust",
                 "outputErrorPolicy": "Stop",
                 "eventsOutOfOrderMaxDelayInSeconds": 0,
@@ -196,8 +274,11 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2022-03-01",
-            "name": "[parameters('serverfarms_ASP_thesis_966c_name')]",
+            "name": "[parameters('serverfarms_ASP_cosensors_9816_name')]",
             "location": "North Europe",
+            "tags": {
+                "created-for": "co-sensors-function-app"
+            },
             "sku": {
                 "name": "Y1",
                 "tier": "Dynamic",
@@ -222,10 +303,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/degradationindependencyduration')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/degradationindependencyduration')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -246,10 +327,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/degradationinserverresponsetime')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/degradationinserverresponsetime')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -270,10 +351,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/digestMailConfiguration')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/digestMailConfiguration')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -294,10 +375,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/extension_billingdatavolumedailyspikeextension')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/extension_billingdatavolumedailyspikeextension')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -318,10 +399,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/extension_canaryextension')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/extension_canaryextension')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -342,10 +423,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/extension_exceptionchangeextension')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/extension_exceptionchangeextension')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -366,10 +447,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/extension_memoryleakextension')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/extension_memoryleakextension')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -390,10 +471,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/extension_securityextensionspackage')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/extension_securityextensionspackage')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -414,10 +495,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/extension_traceseveritydetector')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/extension_traceseveritydetector')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -438,10 +519,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/longdependencyduration')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/longdependencyduration')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -462,10 +543,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/migrationToAlertRulesCompleted')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/migrationToAlertRulesCompleted')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -486,10 +567,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/slowpageloadtime')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/slowpageloadtime')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -510,10 +591,10 @@
         {
             "type": "microsoft.insights/components/ProactiveDetectionConfigs",
             "apiVersion": "2018-05-01-preview",
-            "name": "[concat(parameters('components_co_sensors_function_app_name'), '/slowserverresponsetime')]",
+            "name": "[concat(parameters('components_co_sensors_function_app_insights_name'), '/slowserverresponsetime')]",
             "location": "northeurope",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
             ],
             "properties": {
                 "ruleDefinitions": {
@@ -532,9 +613,108 @@
             }
         },
         {
+            "type": "Microsoft.Resources/templateSpecs/versions",
+            "apiVersion": "2022-02-01",
+            "name": "[concat(parameters('templateSpecs_co_sensors_iot_hub_name'), '/v1')]",
+            "location": "northeurope",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/templateSpecs', parameters('templateSpecs_co_sensors_iot_hub_name'))]"
+            ],
+            "tags": {
+                "created-for": "thesis"
+            },
+            "properties": {
+                "description": "Created resource.",
+                "mainTemplate": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "changeFeed": {
+                    "enabled": false
+                },
+                "restorePolicy": {
+                    "enabled": false
+                },
+                "containerDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": true,
+                    "days": 7
+                },
+                "isVersioningEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {}
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
             "type": "Microsoft.StreamAnalytics/streamingjobs/inputs",
             "apiVersion": "2021-10-01-preview",
-            "name": "[concat(parameters('streamingjobs_co_sensors_stream_analytics_job_name'), '/iot-hub-input')]",
+            "name": "[concat(parameters('streamingjobs_co_sensors_stream_analytics_job_name'), '/co-sensor-iot-hub-stream-analytics-job-input')]",
             "dependsOn": [
                 "[resourceId('Microsoft.StreamAnalytics/streamingjobs', parameters('streamingjobs_co_sensors_stream_analytics_job_name'))]"
             ],
@@ -543,7 +723,7 @@
                 "datasource": {
                     "type": "Microsoft.Devices/IotHubs",
                     "properties": {
-                        "iotHubNamespace": "co-sensors",
+                        "iotHubNamespace": "co-sensors-iot-hub",
                         "sharedAccessPolicyName": "iothubowner",
                         "endpoint": "messages/events",
                         "consumerGroupName": "$Default"
@@ -563,7 +743,7 @@
         {
             "type": "Microsoft.StreamAnalytics/streamingjobs/outputs",
             "apiVersion": "2021-10-01-preview",
-            "name": "[concat(parameters('streamingjobs_co_sensors_stream_analytics_job_name'), '/co-sensors-power-bi-output')]",
+            "name": "[concat(parameters('streamingjobs_co_sensors_stream_analytics_job_name'), '/co-sensors-powerbi-output')]",
             "dependsOn": [
                 "[resourceId('Microsoft.StreamAnalytics/streamingjobs', parameters('streamingjobs_co_sensors_stream_analytics_job_name'))]"
             ],
@@ -572,31 +752,11 @@
                     "type": "PowerBI",
                     "properties": {
                         "authenticationMode": "UserToken",
-                        "dataset": "co-sensors-data",
-                        "table": "co-sensors-data-table",
+                        "dataset": "Sensor data",
+                        "table": "Sensor data",
                         "groupName": "My workspace",
                         "tokenUserPrincipalName": "borcsok.balazs.robert@o365.u-szeged.hu",
                         "tokenUserDisplayName": "Börcsök Balázs Róbert"
-                    }
-                }
-            }
-        },
-        {
-            "type": "Microsoft.StreamAnalytics/streamingjobs/outputs",
-            "apiVersion": "2021-10-01-preview",
-            "name": "[concat(parameters('streamingjobs_co_sensors_stream_analytics_job_name'), '/co-sensors-table-storage-test-output')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.StreamAnalytics/streamingjobs', parameters('streamingjobs_co_sensors_stream_analytics_job_name'))]"
-            ],
-            "properties": {
-                "datasource": {
-                    "type": "Microsoft.Storage/Table",
-                    "properties": {
-                        "accountName": "cosensorsstorageaccount",
-                        "table": "CoSensorsTableStorageTestOutputTABLE",
-                        "partitionKey": "PART_KEY",
-                        "rowKey": "ROW_KEY",
-                        "batchSize": 100
                     }
                 }
             }
@@ -607,12 +767,13 @@
             "name": "[parameters('sites_co_sensors_function_app_name')]",
             "location": "North Europe",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_thesis_966c_name'))]"
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_cosensors_9816_name'))]"
             ],
             "tags": {
-                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/thesis/providers/microsoft.insights/components/co-sensors-function-app",
-                "hidden-link: /app-insights-instrumentation-key": "ebc30c86-d7d2-4e3c-930b-46189c106c87",
-                "hidden-link: /app-insights-conn-string": "InstrumentationKey=ebc30c86-d7d2-4e3c-930b-46189c106c87;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/"
+                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/co-sensors/providers/microsoft.insights/components/co-sensors-function-app-insights",
+                "hidden-link: /app-insights-instrumentation-key": "e049c9aa-b782-4147-8277-dfdc485d7ff4",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e049c9aa-b782-4147-8277-dfdc485d7ff4;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/",
+                "created-for": "co-sensors-iot-hub"
             },
             "kind": "functionapp",
             "properties": {
@@ -629,7 +790,7 @@
                         "hostType": "Repository"
                     }
                 ],
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_thesis_966c_name'))]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_cosensors_9816_name'))]",
                 "reserved": false,
                 "isXenon": false,
                 "hyperV": false,
@@ -652,8 +813,9 @@
                 "customDomainVerificationId": "CB5D861EB6DCF93B3CD7DA4EBD392C352820D9FAB2878D0C3E64E145AFF647AD",
                 "containerSize": 1536,
                 "dailyMemoryTimeQuota": 0,
-                "httpsOnly": false,
+                "httpsOnly": true,
                 "redundancyMode": "None",
+                "publicNetworkAccess": "Enabled",
                 "storageAccountRequired": false,
                 "keyVaultReferenceIdentity": "SystemAssigned"
             }
@@ -667,9 +829,10 @@
                 "[resourceId('Microsoft.Web/sites', parameters('sites_co_sensors_function_app_name'))]"
             ],
             "tags": {
-                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/thesis/providers/microsoft.insights/components/co-sensors-function-app",
-                "hidden-link: /app-insights-instrumentation-key": "ebc30c86-d7d2-4e3c-930b-46189c106c87",
-                "hidden-link: /app-insights-conn-string": "InstrumentationKey=ebc30c86-d7d2-4e3c-930b-46189c106c87;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/"
+                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/co-sensors/providers/microsoft.insights/components/co-sensors-function-app-insights",
+                "hidden-link: /app-insights-instrumentation-key": "e049c9aa-b782-4147-8277-dfdc485d7ff4",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e049c9aa-b782-4147-8277-dfdc485d7ff4;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/",
+                "created-for": "co-sensors-iot-hub"
             },
             "properties": {
                 "allow": true
@@ -684,9 +847,10 @@
                 "[resourceId('Microsoft.Web/sites', parameters('sites_co_sensors_function_app_name'))]"
             ],
             "tags": {
-                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/thesis/providers/microsoft.insights/components/co-sensors-function-app",
-                "hidden-link: /app-insights-instrumentation-key": "ebc30c86-d7d2-4e3c-930b-46189c106c87",
-                "hidden-link: /app-insights-conn-string": "InstrumentationKey=ebc30c86-d7d2-4e3c-930b-46189c106c87;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/"
+                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/co-sensors/providers/microsoft.insights/components/co-sensors-function-app-insights",
+                "hidden-link: /app-insights-instrumentation-key": "e049c9aa-b782-4147-8277-dfdc485d7ff4",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e049c9aa-b782-4147-8277-dfdc485d7ff4;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/",
+                "created-for": "co-sensors-iot-hub"
             },
             "properties": {
                 "allow": true
@@ -701,9 +865,10 @@
                 "[resourceId('Microsoft.Web/sites', parameters('sites_co_sensors_function_app_name'))]"
             ],
             "tags": {
-                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/thesis/providers/microsoft.insights/components/co-sensors-function-app",
-                "hidden-link: /app-insights-instrumentation-key": "ebc30c86-d7d2-4e3c-930b-46189c106c87",
-                "hidden-link: /app-insights-conn-string": "InstrumentationKey=ebc30c86-d7d2-4e3c-930b-46189c106c87;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/"
+                "hidden-link: /app-insights-resource-id": "/subscriptions/31dde498-6719-4ea3-9739-83fb8f4fbf2b/resourceGroups/co-sensors/providers/microsoft.insights/components/co-sensors-function-app-insights",
+                "hidden-link: /app-insights-instrumentation-key": "e049c9aa-b782-4147-8277-dfdc485d7ff4",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e049c9aa-b782-4147-8277-dfdc485d7ff4;IngestionEndpoint=https://northeurope-2.in.applicationinsights.azure.com/;LiveEndpoint=https://northeurope.livediagnostics.monitor.azure.com/",
+                "created-for": "co-sensors-iot-hub"
             },
             "properties": {
                 "numberOfWorkers": 1,
@@ -720,13 +885,14 @@
                 "netFrameworkVersion": "v6.0",
                 "requestTracingEnabled": false,
                 "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
                 "httpLoggingEnabled": false,
                 "acrUseManagedIdentityCreds": false,
                 "logsDirectorySizeLimit": 35,
                 "detailedErrorLoggingEnabled": false,
                 "publishingUsername": "$co-sensors-function-app",
                 "scmType": "None",
-                "use32BitWorkerProcess": true,
+                "use32BitWorkerProcess": false,
                 "webSocketsEnabled": false,
                 "alwaysOn": false,
                 "managedPipelineMode": "Integrated",
@@ -744,6 +910,7 @@
                 "autoHealEnabled": false,
                 "vnetRouteAllEnabled": false,
                 "vnetPrivatePortsCount": 0,
+                "publicNetworkAccess": "Enabled",
                 "cors": {
                     "allowedOrigins": [
                         "https://portal.azure.com"
@@ -773,7 +940,7 @@
                 "http20Enabled": false,
                 "minTlsVersion": "1.2",
                 "scmMinTlsVersion": "1.2",
-                "ftpsState": "AllAllowed",
+                "ftpsState": "FtpsOnly",
                 "preWarmedInstanceCount": 0,
                 "functionAppScaleLimit": 200,
                 "functionsRuntimeScaleMonitoringEnabled": false,
@@ -784,19 +951,39 @@
         {
             "type": "Microsoft.Web/sites/functions",
             "apiVersion": "2022-03-01",
-            "name": "[concat(parameters('sites_co_sensors_function_app_name'), '/coSensorsEventHubTriggerJS')]",
+            "name": "[concat(parameters('sites_co_sensors_function_app_name'), '/saveToTableStorage')]",
             "location": "North Europe",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('sites_co_sensors_function_app_name'))]"
             ],
             "properties": {
-                "script_root_path_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/coSensorsEventHubTriggerJS/",
-                "script_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/coSensorsEventHubTriggerJS/index.js",
-                "config_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/coSensorsEventHubTriggerJS/function.json",
-                "test_data_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/data/Functions/sampledata/coSensorsEventHubTriggerJS.dat",
-                "href": "https://co-sensors-function-app.azurewebsites.net/admin/functions/coSensorsEventHubTriggerJS",
+                "script_root_path_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/saveToTableStorage/",
+                "script_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/saveToTableStorage/index.js",
+                "config_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/saveToTableStorage/function.json",
+                "test_data_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/data/Functions/sampledata/saveToTableStorage.dat",
+                "href": "https://co-sensors-function-app.azurewebsites.net/admin/functions/saveToTableStorage",
                 "config": {},
-                "test_data": "Test Message",
+                "test_data": "{\n  \"deviceId\": \"sim000001\",\n  \"temperature\": \"19.23995347332207\",\n  \"humidity\": \"41.64507087908921\",\n  \"co_level\": \"0.009\",\n  \"device_time\": \"2023-03-26T01:29:01.2574724Z\"\n}",
+                "language": "node",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_co_sensors_function_app_name'), '/sendNotification')]",
+            "location": "North Europe",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_co_sensors_function_app_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/sendNotification/",
+                "script_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/sendNotification/index.js",
+                "config_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/site/wwwroot/sendNotification/function.json",
+                "test_data_href": "https://co-sensors-function-app.azurewebsites.net/admin/vfs/data/Functions/sampledata/sendNotification.dat",
+                "href": "https://co-sensors-function-app.azurewebsites.net/admin/functions/sendNotification",
+                "config": {},
+                "test_data": "{\n  \"deviceId\": \"sim000001\",\n  \"temperature\": \"19.23995347332207\",\n  \"humidity\": \"41.64507087908921\",\n  \"co_level\": \"0\",\n  \"device_time\": \"2023-03-26T01:29:01.2574724Z\"\n}",
                 "language": "node",
                 "isDisabled": false
             }
@@ -817,10 +1004,10 @@
         {
             "type": "microsoft.alertsmanagement/smartdetectoralertrules",
             "apiVersion": "2021-04-01",
-            "name": "[parameters('smartdetectoralertrules_failure_anomalies___co_sensors_function_app_name')]",
+            "name": "[parameters('smartdetectoralertrules_failure_anomalies___co_sensors_function_app_insights_name')]",
             "location": "global",
             "dependsOn": [
-                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]",
+                "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]",
                 "[resourceId('microsoft.insights/actionGroups', parameters('actionGroups_Application_Insights_Smart_Detection_name'))]"
             ],
             "properties": {
@@ -832,7 +1019,7 @@
                     "id": "FailureAnomaliesDetector"
                 },
                 "scope": [
-                    "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_name'))]"
+                    "[resourceId('microsoft.insights/components', parameters('components_co_sensors_function_app_insights_name'))]"
                 ],
                 "actionGroups": {
                     "groupIds": [
@@ -840,6 +1027,81 @@
                     ]
                 }
             }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default/azure-webjobs-eventhub')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_cosensorsstorageaccount_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_cosensorsstorageaccount_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_cosensorsstorageaccount_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default/co-sensors-function-app8f28')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_cosensorsstorageaccount_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "properties": {
+                "accessTier": "TransactionOptimized",
+                "shareQuota": 5120,
+                "enabledProtocols": "SMB"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('storageAccounts_cosensorsstorageaccount_name'), '/default/TELEMETRY')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_cosensorsstorageaccount_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_cosensorsstorageaccount_name'))]"
+            ],
+            "properties": {}
         }
     ]
 }
