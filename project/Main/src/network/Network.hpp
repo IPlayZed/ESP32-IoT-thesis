@@ -3,7 +3,7 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include "Common.h"
+#include "../common/Common.hpp"
 
 #define MQTT_QOS_LEVEL_AT_MOST_ONCE 0
 #define MQTT_QOS_LEVEL_AT_LEAST_ONCE 1
@@ -16,17 +16,18 @@ namespace Network
 {
     namespace Telemetry
     {
-        typedef struct telemetryData {
+        typedef struct telemetryData
+        {
             float temperature;
             float humidity;
-            float CO;
+            double CO;
         } telemetryData_t;
 
-        void processTelemetryData(Network::Telemetry::telemetryData_t* telemetryData);
+        void processTelemetryData(Network::Telemetry::telemetryData_t *telemetryData);
         void sendTelemetry();
     }
     void turnOffWiFi(void);
     void setupNetworking(bool turnOffWifiAfterSetup = WIFI_KEEP_ON);
 }
 
-#endif
+#endif // NETWORK_H

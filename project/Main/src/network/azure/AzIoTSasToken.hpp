@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
-#ifndef AZIOTSASTOKEN_H
-#define AZIOTSASTOKEN_H
+#ifndef AZIOTSASTOKEN_HPP
+#define AZIOTSASTOKEN_HPP
 
 #define SAS_TOKEN_GENERATION_OK 0
 
@@ -31,4 +31,4 @@ private:
   uint32_t expirationUnixTime;
 };
 
-#endif // AZIOTSASTOKEN_H
+#endif // AZIOTSASTOKEN_HPP

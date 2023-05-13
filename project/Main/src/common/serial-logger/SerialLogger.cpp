@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
+// Modified by project author.
 
-#include "SerialLogger.h"
 #include <time.h>
+
+#include "SerialLogger.hpp"
 
 #define UNIX_EPOCH_START_YEAR 1900
 
 static void writeTime()
 {
-  struct tm* ptm;
+  struct tm *ptm;
   time_t now = time(NULL);
 
   ptm = gmtime(&now);
@@ -44,10 +46,10 @@ static void writeTime()
   Serial.print(ptm->tm_sec);
 }
 
-SerialLogger::SerialLogger() { Serial.begin(SERIAL_LOGGER_BAUD_RATE); }
-
-// TODO: Use conditional compilation here instead of wrapping this into one.
-// TODO: Wrap these into one function call rather.
+SerialLogger::SerialLogger()
+{
+  Serial.begin(SERIAL_LOGGER_BAUD_RATE);
+}
 
 void SerialLogger::Info(String message)
 {

@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
+// Modified by project author.
 
-#ifndef SERIALLOGGER_H
-#define SERIALLOGGER_H
+#ifndef SERIALLOGGER_HPP
+#define SERIALLOGGER_HPP
 
 #include <Arduino.h>
-#include "CommonConfig.h"
+#include "../CommonConfig.hpp"
 
 #ifndef SERIAL_LOGGER_BAUD_RATE
 #define SERIAL_LOGGER_BAUD_RATE CONFIG_SERIAL_BAUD_RATE
@@ -22,4 +23,4 @@ public:
 
 extern SerialLogger Logger;
 
-#endif // SERIALLOGGER_H
+#endif // SERIALLOGGER_HPP
