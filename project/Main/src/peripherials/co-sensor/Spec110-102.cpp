@@ -6,6 +6,10 @@
 #include "COSensor.hpp"
 
 double ppm = 0.0;
+/*!
+*    @brief  This is the measured PPM level in a well ventillated environment.
+*/
+constexpr double offset = 74400.0;
 
 bool COSensor::initializeSensor()
 {
@@ -28,7 +32,7 @@ void COSensor::makeMeasurement()
     uint32_t adcResult = Adc::readAdc();    
     double adcCurrent = (adcResult * Configurations::Adc::REFERENCE_VOLTAGE) / Configurations::Adc::PRECISION_BITS;
     LogInfo("ADC current is: " + String(adcCurrent) + "A");
-    double _ppm = (adcCurrent * 1000000000.0) / 2.0; // Calculated by scaling to nA and 1 PPM is per 2 nA.
+    double _ppm = (offset - adcCurrent * 1000000000.0) / 2.0; // Calculated by scaling to nA and 1 PPM is per 2 nA.
     LogInfo("CO level is: " + String(_ppm) + "PPM");
     ppm = _ppm;
 }
